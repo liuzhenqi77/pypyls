@@ -30,7 +30,7 @@ def _set_group_lvls(n_conds, n_grps, grp_lvls=None):
     else:
         for i in range(n_grps):
             grping.extend([grp_lvls[i]] * n_conds)
-    return pd.Series(grping, name='Group')
+    return pd.Series(grping, name="Group")
 
 
 def _set_cond_lvls(n_conds, n_grps, cond_lvls=None):
@@ -56,7 +56,7 @@ def _set_cond_lvls(n_conds, n_grps, cond_lvls=None):
     else:
         cond_lvls = cond_lvls * n_grps
 
-    return pd.Series(cond_lvls, name='Condition')
+    return pd.Series(cond_lvls, name="Condition")
 
 
 def _define_vars(results, cond_lvls=None, grp_lvls=None):
@@ -92,7 +92,7 @@ def _define_vars(results, cond_lvls=None, grp_lvls=None):
 
     num_est = estimate.shape[1] + 1  # for 1-based indexing in plots
     colnames = []
-    for itm in ['Estimate_LV', 'UL_LV', 'LL_LV']:
+    for itm in ["Estimate_LV", "UL_LV", "LL_LV"]:
         for i in range(1, num_est):
             colnames.append(itm + str(i))
 
@@ -122,13 +122,14 @@ def _rearrange_df(df, plot_order):
         Provided dataframe `df` with re-ordered conditions
     """
     sorter_idx = dict(zip(plot_order, range(len(plot_order))))
-    df['Cond_Arrange'] = df['Condition'].map(sorter_idx)
-    df = df.sort_values(by=['Group', 'Cond_Arrange'], ascending=[False, True])
-    return df.drop(columns=['Cond_Arrange'])
+    df["Cond_Arrange"] = df["Condition"].map(sorter_idx)
+    df = df.sort_values(by=["Group", "Cond_Arrange"], ascending=[False, True])
+    return df.drop(columns=["Cond_Arrange"])
 
 
-def plot_contrast(results, lv=0, cond_labels=None, group_labels=None,
-                  cond_order=None, **kwargs):
+def plot_contrast(
+    results, lv=0, cond_labels=None, group_labels=None, cond_order=None, **kwargs
+):
     """
     Plot group / condition contrast from `results` for a provided `lv`.
 
@@ -160,16 +161,33 @@ def plot_contrast(results, lv=0, cond_labels=None, group_labels=None,
     if cond_order is not None:
         df = _rearrange_df(df, cond_order)
     num_sig = (len(df.columns) - 2) // 3
-    ax = sns.barplot(x="Group", y=df[df.columns[lv]], hue="Condition",
-                     data=df, capsize=0.1, errwidth=1.25, alpha=0.25, ci=None,
-                     **kwargs)
+    ax = sns.barplot(
+        x="Group",
+        y=df[df.columns[lv]],
+        hue="Condition",
+        data=df,
+        capsize=0.1,
+        errwidth=1.25,
+        alpha=0.25,
+        ci=None,
+        **kwargs,
+    )
     ax.legend(bbox_to_anchor=(1.1, 1.05))
     x = [r.get_x() for r in ax.patches]
     nx = np.sort(x)
-    abs_err = np.abs([df[df.columns[lv + (num_sig * 2)]].get_values(),
-                      df[df.columns[lv + num_sig]].get_values()]
-                     - df[df.columns[lv]].get_values())
-    ax.errorbar(x=nx + (np.diff(nx).min() / 2),
-                y=df[df.columns[lv]], fmt='none', yerr=abs_err, ecolor='black')
+    abs_err = np.abs(
+        [
+            df[df.columns[lv + (num_sig * 2)]].get_values(),
+            df[df.columns[lv + num_sig]].get_values(),
+        ]
+        - df[df.columns[lv]].get_values()
+    )
+    ax.errorbar(
+        x=nx + (np.diff(nx).min() / 2),
+        y=df[df.columns[lv]],
+        fmt="none",
+        yerr=abs_err,
+        ecolor="black",
+    )
 
     return ax

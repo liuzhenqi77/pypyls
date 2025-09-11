@@ -20,7 +20,7 @@ def test_PLSInputs(pls_inputs):
 
     # confirm n_proc inputs are handled appropriately
     assert structures.PLSInputs(n_proc=1).n_proc == 1
-    for n_proc in ['max', -1]:
+    for n_proc in ["max", -1]:
         assert structures.PLSInputs(n_proc=n_proc).n_proc == mp.cpu_count()
     assert structures.PLSInputs(n_proc=-2).n_proc == mp.cpu_count() - 1
 
@@ -31,7 +31,7 @@ def test_PLSInputs(pls_inputs):
         structures.PLSInputs(test_size=-0.5)
 
     # check that PLSInputs rejects disallowed keys
-    assert structures.PLSInputs(notakey=10).get('notakey') is None
+    assert structures.PLSInputs(notakey=10).get("notakey") is None
 
 
 @pytest.mark.xfail

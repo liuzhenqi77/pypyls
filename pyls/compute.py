@@ -35,17 +35,20 @@ def svd(crosscov, n_components=None, seed=None):
     if n_components is None:
         n_components = min(crosscov.shape)
     elif not isinstance(n_components, int):
-        raise TypeError('Provided `n_components` {} must be of type int'
-                        .format(n_components))
+        raise TypeError(
+            "Provided `n_components` {} must be of type int".format(n_components)
+        )
 
     # run most computationally efficient SVD
     if crosscov.shape[0] <= crosscov.shape[1]:
-        U, d, V = randomized_svd(crosscov.T, n_components=n_components,
-                                 random_state=seed, transpose=False)
+        U, d, V = randomized_svd(
+            crosscov.T, n_components=n_components, random_state=seed, transpose=False
+        )
         V = V.T
     else:
-        V, d, U = randomized_svd(crosscov, n_components=n_components,
-                                 random_state=seed, transpose=False)
+        V, d, U = randomized_svd(
+            crosscov, n_components=n_components, random_state=seed, transpose=False
+        )
         U = U.T
 
     return U, np.diag(d), V
@@ -223,7 +226,7 @@ def boot_rel(orig, u_sum, u_square, n_boot):
     bsr : (G, L) `numpy.ndarray`
         Bootstrap ratios for provided singular vectors
     """
-    u_sum2 = (u_sum ** 2) / n_boot
+    u_sum2 = (u_sum**2) / n_boot
     u_se = np.sqrt(np.abs(u_square - u_sum2) / (n_boot - 1))
     bsr = orig / u_se
 
@@ -293,8 +296,7 @@ def get_group_mean(X, Y, n_cond=1, mean_centering=0):
         raise ValueError("Mean centering type must be in [0, 1, 2].")
 
     # get mean of data over grouping variable
-    group_mean = np.vstack([X[grp].mean(axis=0)[None] for grp in
-                               groups.T.astype(bool)])
+    group_mean = np.vstack([X[grp].mean(axis=0)[None] for grp in groups.T.astype(bool)])
 
     # we want group_mean to have the same number of rows as Y does columns
     # that way, we can easily subtract it for mean centering the data
@@ -341,12 +343,14 @@ def get_mean_center(X, Y, n_cond=1, mean_centering=0, means=True):
 
     if means:
         # take mean of groups and subtract relevant mean_centering entry
-        mean_centered = np.vstack([X[grp].mean(axis=0) - mc[n] for (n, grp)
-                                      in enumerate(Y.T.astype(bool))])
+        mean_centered = np.vstack(
+            [X[grp].mean(axis=0) - mc[n] for (n, grp) in enumerate(Y.T.astype(bool))]
+        )
     else:
         # subtract relevant mean_centering entry from each observation
-        mean_centered = np.vstack([X[grp] - mc[n][None] for (n, grp)
-                                      in enumerate(Y.T.astype(bool))])
+        mean_centered = np.vstack(
+            [X[grp] - mc[n][None] for (n, grp) in enumerate(Y.T.astype(bool))]
+        )
 
     return mean_centered
 
@@ -371,10 +375,11 @@ def efficient_corr(x, y):
     # check shapes
     if x.shape != y.shape:
         if x.shape[-1] != 1 and y.shape[-1] != 1:
-            raise ValueError('Provided inputs x and y must either have '
-                             'matching shapes or one must be a column '
-                             'vector.\nProvided data:\n\tx: {}\n\ty: {}'
-                             .format(x.shape, y.shape))
+            raise ValueError(
+                "Provided inputs x and y must either have "
+                "matching shapes or one must be a column "
+                "vector.\nProvided data:\n\tx: {}\n\ty: {}".format(x.shape, y.shape)
+            )
 
     corr = np.sum(zscore(x, ddof=1) * zscore(y, ddof=1), axis=0) / (len(x) - 1)
 
@@ -399,8 +404,9 @@ def varexp(singular):
         Variance explained
     """
     if singular.ndim != 2:
-        raise ValueError('Provided `singular` array must be a square diagonal '
-                         'matrix, not array of shape {}'
-                         .format(singular.shape))
+        raise ValueError(
+            "Provided `singular` array must be a square diagonal "
+            "matrix, not array of shape {}".format(singular.shape)
+        )
 
-    return np.diag(np.diag(singular)**2 / np.sum(np.diag(singular)**2))
+    return np.diag(np.diag(singular) ** 2 / np.sum(np.diag(singular) ** 2))

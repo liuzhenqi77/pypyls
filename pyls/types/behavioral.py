@@ -10,21 +10,50 @@ from .. import compute, utils
 class BehavioralPLS(BasePLS):
     """Behavioral PLS."""
 
-    def __init__(self, X, Y, *, groups=None, n_cond=1, n_perm=5000,
-                 n_boot=5000, n_split=100, test_size=0.25, test_split=100,
-                 covariance=False, rotate=True, ci=95, permsamples=None,
-                 custom_permuted_Y=None,
-                 bootsamples=None, seed=None, verbose=True, n_proc=None,
-                 **kwargs):
-
-        super().__init__(X=np.asarray(X), Y=np.asarray(Y), groups=groups,
-                         n_cond=n_cond, n_perm=n_perm, n_boot=n_boot,
-                         n_split=n_split, test_size=test_size,
-                         test_split=test_split, covariance=covariance,
-                         rotate=rotate, ci=ci, permsamples=permsamples,
-                         custom_permuted_Y=custom_permuted_Y,
-                         bootsamples=bootsamples, seed=seed, verbose=verbose,
-                         n_proc=n_proc, **kwargs)
+    def __init__(
+        self,
+        X,
+        Y,
+        *,
+        groups=None,
+        n_cond=1,
+        n_perm=5000,
+        n_boot=5000,
+        n_split=100,
+        test_size=0.25,
+        test_split=100,
+        covariance=False,
+        rotate=True,
+        ci=95,
+        permsamples=None,
+        custom_permuted_Y=None,
+        bootsamples=None,
+        seed=None,
+        verbose=True,
+        n_proc=None,
+        **kwargs,
+    ):
+        super().__init__(
+            X=np.asarray(X),
+            Y=np.asarray(Y),
+            groups=groups,
+            n_cond=n_cond,
+            n_perm=n_perm,
+            n_boot=n_boot,
+            n_split=n_split,
+            test_size=test_size,
+            test_split=test_split,
+            covariance=covariance,
+            rotate=rotate,
+            ci=ci,
+            permsamples=permsamples,
+            custom_permuted_Y=custom_permuted_Y,
+            bootsamples=bootsamples,
+            seed=seed,
+            verbose=verbose,
+            n_proc=n_proc,
+            **kwargs,
+        )
 
         self.results = self.run_pls(self.inputs.X, self.inputs.Y)
 
@@ -49,10 +78,12 @@ class BehavioralPLS(BasePLS):
         crosscov : (J*T, B) np.ndarray
             Cross-covariance matrix
         """
-        return np.vstack([
-            compute.xcorr(X[grp], Y[grp], covariance=self.inputs.covariance)
-            for grp in groups.T.astype(bool)
-        ])
+        return np.vstack(
+            [
+                compute.xcorr(X[grp], Y[grp], covariance=self.inputs.covariance)
+                for grp in groups.T.astype(bool)
+            ]
+        )
 
     def gen_distrib(self, X, Y, original, groups, *args, **kwargs):
         """
@@ -105,17 +136,22 @@ class BehavioralPLS(BasePLS):
             groups = utils.dummy_code(self.inputs.groups, self.inputs.n_cond)
 
         # use gen_splits to handle grouping/condition vars in train/test split
-        splits = gen_splits(self.inputs.groups,
-                            self.inputs.n_cond,
-                            self.inputs.test_split,
-                            seed=seed,
-                            test_size=self.inputs.test_size)
+        splits = gen_splits(
+            self.inputs.groups,
+            self.inputs.n_cond,
+            self.inputs.test_split,
+            seed=seed,
+            test_size=self.inputs.test_size,
+        )
 
-        gen = utils.trange(self.inputs.test_split, verbose=self.inputs.verbose,
-                           desc='Running cross-validation')
-        with utils.get_par_func(self.inputs.n_proc,
-                                self.__class__._single_crossval) as (par,
-                                                                     func):
+        gen = utils.trange(
+            self.inputs.test_split,
+            verbose=self.inputs.verbose,
+            desc="Running cross-validation",
+        )
+        with utils.get_par_func(
+            self.inputs.n_proc, self.__class__._single_crossval
+        ) as (par, func):
             out = par(
                 func(self, X=X, Y=Y, inds=splits[:, i], groups=groups, seed=i)
                 for i in gen
@@ -158,14 +194,15 @@ class BehavioralPLS(BasePLS):
         for n, V_spl in enumerate(np.split(V, groups.shape[-1])):
             tr_grp = dummy_train[:, n].astype(bool)
             te_grp = dummy_test[:, n].astype(bool)
-            rescaled = compute.rescale_test(X_train[tr_grp], X_test[te_grp],
-                                            Y_train[tr_grp], U, V_spl)
+            rescaled = compute.rescale_test(
+                X_train[tr_grp], X_test[te_grp], Y_train[tr_grp], U, V_spl
+            )
             Y_pred.append(rescaled)
         Y_pred = np.vstack(Y_pred)
 
         # calculate r & r-squared from comp of rescaled test & true values
         r_scores = compute.efficient_corr(Y_test, Y_pred)
-        r2_scores = r2_score(Y_test, Y_pred, multioutput='raw_values')
+        r2_scores = r2_score(Y_test, Y_pred, multioutput="raw_values")
 
         return r_scores, r2_scores
 
@@ -183,63 +220,103 @@ class BehavioralPLS(BasePLS):
         res = super().run_pls(X, Y)
 
         # mechanism for splitting outputs along group / condition indices
-        grps = np.repeat(res['inputs']['groups'], res['inputs']['n_cond'])
-        res['y_scores'] = np.vstack([
-            y @ v for (y, v) in zip(np.split(Y, np.cumsum(grps)[:-1]),
-                                    np.split(res['y_weights'], len(grps)))
-        ])
+        grps = np.repeat(res["inputs"]["groups"], res["inputs"]["n_cond"])
+        res["y_scores"] = np.vstack(
+            [
+                y @ v
+                for (y, v) in zip(
+                    np.split(Y, np.cumsum(grps)[:-1]),
+                    np.split(res["y_weights"], len(grps)),
+                )
+            ]
+        )
 
         # get lvcorrs
         groups = utils.dummy_code(self.inputs.groups, self.inputs.n_cond)
-        res['y_loadings'] = self.gen_covcorr(res['x_scores'], Y, groups)
+        res["y_loadings"] = self.gen_covcorr(res["x_scores"], Y, groups)
 
         if self.inputs.n_boot > 0:
             # compute bootstraps
             distrib, u_sum, u_square = self.bootstrap(X, Y, self.rs)
 
             # add original scaled singular vectors back in
-            bs = res['x_weights'] @ res['singvals']
-            u_sum, u_square = u_sum + bs, u_square + (bs ** 2)
+            bs = res["x_weights"] @ res["singvals"]
+            u_sum, u_square = u_sum + bs, u_square + (bs**2)
 
             # calculate bootstrap ratios and confidence intervals
-            bsrs, uboot_se = compute.boot_rel(bs, u_sum, u_square,
-                                              self.inputs.n_boot + 1)
+            bsrs, uboot_se = compute.boot_rel(
+                bs, u_sum, u_square, self.inputs.n_boot + 1
+            )
             corrci = np.stack(compute.boot_ci(distrib, ci=self.inputs.ci), -1)
 
             # update results.boot_result dictionary
-            res['bootres'].update(dict(x_weights_normed=bsrs,
-                                       x_weights_stderr=uboot_se,
-                                       y_loadings=res['y_loadings'].copy(),
-                                       y_loadings_boot=distrib,
-                                       y_loadings_ci=corrci,
-                                       bootsamples=self.bootsamp))
+            res["bootres"].update(
+                dict(
+                    x_weights_normed=bsrs,
+                    x_weights_stderr=uboot_se,
+                    y_loadings=res["y_loadings"].copy(),
+                    y_loadings_boot=distrib,
+                    y_loadings_ci=corrci,
+                    bootsamples=self.bootsamp,
+                )
+            )
 
         # compute cross-validated prediction-based metrics
         if self.inputs.test_split is not None and self.inputs.test_size > 0:
             r, r2 = self.crossval(X, Y, groups=self.dummy, seed=self.rs)
-            res['cvres'].update(dict(pearson_r=r, r_squared=r2))
+            res["cvres"].update(dict(pearson_r=r, r_squared=r2))
 
         # get rid of the stupid diagonal matrix
-        res['varexp'] = np.diag(compute.varexp(res['singvals']))
-        res['singvals'] = np.diag(res['singvals'])
+        res["varexp"] = np.diag(compute.varexp(res["singvals"]))
+        res["singvals"] = np.diag(res["singvals"])
 
         return res
 
 
 # let's make it a function
-def behavioral_pls(X, Y, *, groups=None, n_cond=1, n_perm=5000, n_boot=5000,  # noqa: D103
-                   n_split=0, test_size=0.25, test_split=100,
-                   covariance=False, rotate=True, ci=95, permsamples=None,
-                   custom_permuted_Y=None,
-                   bootsamples=None, seed=None, verbose=True, n_proc=None,
-                   **kwargs):
-    pls = BehavioralPLS(X=X, Y=Y, groups=groups, n_cond=n_cond,
-                        n_perm=n_perm, n_boot=n_boot, n_split=n_split,
-                        test_size=test_size, test_split=test_split,
-                        covariance=covariance, rotate=rotate, ci=ci,
-                        permsamples=permsamples, bootsamples=bootsamples,
-                        custom_permuted_Y=custom_permuted_Y,
-                        seed=seed, verbose=verbose, n_proc=n_proc, **kwargs)
+def behavioral_pls(
+    X,
+    Y,
+    *,
+    groups=None,
+    n_cond=1,
+    n_perm=5000,
+    n_boot=5000,  # noqa: D103
+    n_split=0,
+    test_size=0.25,
+    test_split=100,
+    covariance=False,
+    rotate=True,
+    ci=95,
+    permsamples=None,
+    custom_permuted_Y=None,
+    bootsamples=None,
+    seed=None,
+    verbose=True,
+    n_proc=None,
+    **kwargs,
+):
+    pls = BehavioralPLS(
+        X=X,
+        Y=Y,
+        groups=groups,
+        n_cond=n_cond,
+        n_perm=n_perm,
+        n_boot=n_boot,
+        n_split=n_split,
+        test_size=test_size,
+        test_split=test_split,
+        covariance=covariance,
+        rotate=rotate,
+        ci=ci,
+        permsamples=permsamples,
+        bootsamples=bootsamples,
+        custom_permuted_Y=custom_permuted_Y,
+        seed=seed,
+        verbose=verbose,
+        n_proc=n_proc,
+        **kwargs,
+    )
     return pls.results
 
 

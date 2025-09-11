@@ -6,8 +6,10 @@ import numpy as np
 import tqdm
 from sklearn.utils import Bunch
 from sklearn.utils.validation import check_array, check_random_state
+
 try:
     from joblib import Parallel, delayed
+
     joblib_avail = True
 except ImportError:
     joblib_avail = False
@@ -24,16 +26,15 @@ class ResDict(Bunch):
 
     def __init__(self, **kwargs):
         # only keep allowed keys
-        i = {key: val for key, val in kwargs.items() if key in
-             self.__class__.allowed}
+        i = {key: val for key, val in kwargs.items() if key in self.__class__.allowed}
         super().__init__(**i)
 
     def __str__(self):
         """Return string representation showing only non-empty keys."""
-        items = [k for k in self.__class__.allowed
-                 if k in _not_empty_keys(self)]
-        return '{name}({keys})'.format(name=self.__class__.__name__,
-                                       keys=', '.join(items))
+        items = [k for k in self.__class__.allowed if k in _not_empty_keys(self)]
+        return "{name}({keys})".format(
+            name=self.__class__.__name__, keys=", ".join(items)
+        )
 
     def __setitem__(self, key, val):
         """Set item only if key is in the allowed list."""
@@ -94,8 +95,9 @@ def _not_empty_keys(dictionary):
         Non-empty keys in `dictionary`
     """
     if not isinstance(dictionary, dict):
-        raise TypeError('Provided input must be type dict, not {}'
-                        .format(type(dictionary)))
+        raise TypeError(
+            "Provided input must be type dict, not {}".format(type(dictionary))
+        )
 
     keys = []
     for key, value in dictionary.items():
@@ -143,8 +145,9 @@ def trange(n_iter, verbose=True, **kwargs):
     -------
     progbar : :obj:`tqdm.tqdm`
     """
-    form = ('{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt}'
-            ' | {elapsed}<{remaining}')
+    form = (
+        "{desc}: {percentage:3.0f}%|{bar}| {n_fmt}/{total_fmt} | {elapsed}<{remaining}"
+    )
     defaults = dict(ascii=True, leave=False, bar_format=form)
     defaults.update(kwargs)
 
@@ -220,7 +223,7 @@ def permute_cols(x, seed=None):
     return x[ix_i, ix_j]
 
 
-class _unravel():
+class _unravel:
     """
     Small utility to unravel generator object into a list.
 
@@ -267,8 +270,9 @@ def get_par_func(n_proc, func, **kwargs):
     """
     if joblib_avail:
         func = delayed(func)
-        with Parallel(n_jobs=n_proc, max_nbytes=1e6,
-                      mmap_mode='r+', **kwargs) as parallel:
+        with Parallel(
+            n_jobs=n_proc, max_nbytes=1e6, mmap_mode="r+", **kwargs
+        ) as parallel:
             yield parallel, func
     else:
         parallel = _unravel()

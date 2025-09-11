@@ -46,8 +46,9 @@ def resid_yscores(x_scores, y_scores, copy=True):
 
 def get_mask(X, Y):
     """Return mask removing rows where either X/Y contain all NaN values."""
-    return np.logical_not(np.logical_or(np.all(np.isnan(X), axis=1),
-                                        np.all(np.isnan(Y), axis=1)))
+    return np.logical_not(
+        np.logical_or(np.all(np.isnan(X), axis=1), np.all(np.isnan(Y), axis=1))
+    )
 
 
 def simpls(X, Y, n_components=None, seed=1234):
@@ -82,8 +83,8 @@ def simpls(X, Y, n_components=None, seed=1234):
         n_components = min(len(X) - 1, X.shape[1])
 
     # center variables and calculate covariance matrix
-    X0 = (X - X.mean(axis=0, keepdims=True))
-    Y0 = (Y - Y.mean(axis=0, keepdims=True))
+    X0 = X - X.mean(axis=0, keepdims=True)
+    Y0 = Y - Y.mean(axis=0, keepdims=True)
     Cov = X0.T @ Y0
 
     # to store outputs
@@ -148,8 +149,8 @@ def simpls(X, Y, n_components=None, seed=1234):
 
     # percent variance explained for both X and Y for all components
     pctvar = [
-        np.sum(x_loadings ** 2, axis=0) / np.sum(X0 ** 2),
-        np.sum(y_loadings ** 2, axis=0) / np.sum(Y0 ** 2)
+        np.sum(x_loadings**2, axis=0) / np.sum(X0**2),
+        np.sum(y_loadings**2, axis=0) / np.sum(Y0**2),
     ]
 
     # mean squared error for models
@@ -157,8 +158,8 @@ def simpls(X, Y, n_components=None, seed=1234):
     mse[0, 0] = np.sum(np.abs(X0) ** 2)
     mse[1, 0] = np.sum(np.abs(Y0) ** 2)
     for i in range(n_components):
-        X0_recon = x_scores[:, :i + 1] @ x_loadings[:, :i + 1].T
-        Y0_recon = x_scores[:, :i + 1] @ y_loadings[:, :i + 1].T
+        X0_recon = x_scores[:, : i + 1] @ x_loadings[:, : i + 1].T
+        Y0_recon = x_scores[:, : i + 1] @ y_loadings[:, : i + 1].T
         mse[0, i + 1] = np.sum(np.abs(X0 - X0_recon) ** 2)
         mse[1, i + 1] = np.sum(np.abs(Y0 - Y0_recon) ** 2)
     mse /= len(X)
@@ -185,13 +186,24 @@ def simpls(X, Y, n_components=None, seed=1234):
 class PLSRegression(BasePLS):
     """Partial least squares regression (PLS-R)."""
 
-    def __init__(self, X, Y, *, n_components=None,
-                 n_perm=5000, n_boot=5000,
-                 rotate=True, ci=95, aggfunc='mean',
-                 permsamples=None, bootsamples=None,
-                 seed=None, verbose=True, n_proc=None,
-                 **kwargs):
-
+    def __init__(
+        self,
+        X,
+        Y,
+        *,
+        n_components=None,
+        n_perm=5000,
+        n_boot=5000,
+        rotate=True,
+        ci=95,
+        aggfunc="mean",
+        permsamples=None,
+        bootsamples=None,
+        seed=None,
+        verbose=True,
+        n_proc=None,
+        **kwargs,
+    ):
         # check n_components isn't unreasonable
         max_components = min(len(X) - 1, X.shape[1])
         if n_components is None:
@@ -199,17 +211,22 @@ class PLSRegression(BasePLS):
         else:
             n_components = int(n_components)
             if n_components > max_components:
-                raise ValueError('Provided `n_components` cannot be greater '
-                                 'than {}'.format(max_components))
+                raise ValueError(
+                    "Provided `n_components` cannot be greater than {}".format(
+                        max_components
+                    )
+                )
 
         # bootstrapping is more complicated in this instance
         if Y.ndim == 3:
             if bootsamples is None:
                 # we can generate exactly what we need for the bootsamples
-                s = gen_bootsamp([Y.shape[0]], n_cond=1, n_boot=n_boot,
-                                 seed=seed, verbose=verbose)
-                c = gen_bootsamp([Y.shape[-1]], n_cond=1, n_boot=n_boot,
-                                 seed=seed, verbose=verbose)
+                s = gen_bootsamp(
+                    [Y.shape[0]], n_cond=1, n_boot=n_boot, seed=seed, verbose=verbose
+                )
+                c = gen_bootsamp(
+                    [Y.shape[-1]], n_cond=1, n_boot=n_boot, seed=seed, verbose=verbose
+                )
                 bootsamples = np.array(list(zip(s.T, c.T))).T
             else:
                 # we expect a (2, n_boot) array, where the first row is an
@@ -220,25 +237,41 @@ class PLSRegression(BasePLS):
                 s, c = [np.vstack(b).shape[-1] for b in bootsamples]
                 sexp, cexp = Y.shape[0], Y.shape[-1]
                 if bootsamples.shape != (2, n_boot) or s != sexp or c != cexp:
-                    raise ValueError('Provided bootsamples arrays does not '
-                                     'match size of provided input arrays or '
-                                     'number of bootstraps requested via '
-                                     '`nboot`.')
+                    raise ValueError(
+                        "Provided bootsamples arrays does not "
+                        "match size of provided input arrays or "
+                        "number of bootstraps requested via "
+                        "`nboot`."
+                    )
 
             # also, we only care about aggfunc if we have a 3d `Y` matrix
             aggfuncs = dict(mean=np.mean, median=np.median, sum=np.sum)
             if not callable(aggfunc) and aggfunc not in aggfuncs:
-                raise ValueError('Provided `aggfunc` must either be callable '
-                                 'or one of {}'.format(sorted(aggfuncs)))
+                raise ValueError(
+                    "Provided `aggfunc` must either be callable or one of {}".format(
+                        sorted(aggfuncs)
+                    )
+                )
             self.aggfunc = aggfuncs.get(aggfunc, aggfunc)
 
         # these need to be zero -- they're not implemented for PLSRegression
         kwargs.update(n_split=0, test_split=0)
-        super().__init__(X=np.asarray(X), Y=np.asarray(Y),
-                         n_components=n_components, n_perm=n_perm,
-                         n_boot=n_boot, rotate=rotate, ci=ci, aggfunc=aggfunc,
-                         permsamples=permsamples, bootsamples=bootsamples,
-                         seed=seed, verbose=verbose, n_proc=n_proc, **kwargs)
+        super().__init__(
+            X=np.asarray(X),
+            Y=np.asarray(Y),
+            n_components=n_components,
+            n_perm=n_perm,
+            n_boot=n_boot,
+            rotate=rotate,
+            ci=ci,
+            aggfunc=aggfunc,
+            permsamples=permsamples,
+            bootsamples=bootsamples,
+            seed=seed,
+            verbose=verbose,
+            n_proc=n_proc,
+            **kwargs,
+        )
 
         self.n_components = n_components
         self.results = self.run_pls(self.inputs.X, self.inputs.Y)
@@ -271,7 +304,7 @@ class PLSRegression(BasePLS):
         # need to return len-3 for compatibility purposes
         # use the variance explained in Y in lieu of the singular values since
         # that's what we'll be testing against in permutations
-        return out['x_weights'], np.diag(out['pctvar'][1]), None
+        return out["x_weights"], np.diag(out["pctvar"][1]), None
 
     def _single_boot(self, X, Y, inds, groups=None, original=None, seed=None):
         """
@@ -360,7 +393,7 @@ class PLSRegression(BasePLS):
             # recompute pctvar based on new x_weight signs
             mask = get_mask(Xp, Yp)
             y_loadings = Yp[mask].T @ (Xp @ x_weights)[mask]
-            varexp = np.sum(y_loadings ** 2, axis=0) / np.sum(Yp[mask] ** 2)
+            varexp = np.sum(y_loadings**2, axis=0) / np.sum(Yp[mask] ** 2)
         else:
             varexp = np.diag(varexp)
 
@@ -381,9 +414,11 @@ class PLSRegression(BasePLS):
         try:
             Y_agg = self.aggfunc(Y, axis=-1) if Y.ndim == 3 else Y
         except TypeError:
-            raise TypeError('Provided callable `aggfun` must accept `axis` '
-                            'keyword argument to condense an array along '
-                            'the specified axis.') from None
+            raise TypeError(
+                "Provided callable `aggfun` must accept `axis` "
+                "keyword argument to condense an array along "
+                "the specified axis."
+            ) from None
 
         # mean-center here so that our outputs are generated accordingly
         X -= np.nanmean(X, axis=0, keepdims=True)
@@ -391,46 +426,77 @@ class PLSRegression(BasePLS):
         mask = get_mask(X, Y_agg)
 
         res = super().run_pls(X, Y_agg)
-        res['y_loadings'] = Y_agg[mask].T @ res['x_scores'][mask]
-        res['y_scores'] = np.full((len(Y_agg), self.n_components), np.nan)
-        res['y_scores'][mask] = resid_yscores(res['x_scores'][mask],
-                                              Y_agg[mask] @ res['y_loadings'])
+        res["y_loadings"] = Y_agg[mask].T @ res["x_scores"][mask]
+        res["y_scores"] = np.full((len(Y_agg), self.n_components), np.nan)
+        res["y_scores"][mask] = resid_yscores(
+            res["x_scores"][mask], Y_agg[mask] @ res["y_loadings"]
+        )
 
         if self.inputs.n_boot > 0:
             # compute bootstraps
             distrib, u_sum, u_square = self.bootstrap(X, Y, self.rs)
 
             # add original weights back in so we account for those
-            bs = res['x_weights']
-            u_sum, u_square = u_sum + bs, u_square + (bs ** 2)
+            bs = res["x_weights"]
+            u_sum, u_square = u_sum + bs, u_square + (bs**2)
 
             # calculate normalized ratios + bootstrap errors
-            bsrs, uboot_se = compute.boot_rel(bs, u_sum, u_square,
-                                              self.inputs.n_boot + 1)
+            bsrs, uboot_se = compute.boot_rel(
+                bs, u_sum, u_square, self.inputs.n_boot + 1
+            )
             corrci = np.stack(compute.boot_ci(distrib, ci=self.inputs.ci), -1)
-            res['bootres'].update(dict(x_weights_normed=bsrs,
-                                       x_weights_stderr=uboot_se,
-                                       y_loadings=res['y_loadings'],
-                                       y_loadings_boot=distrib,
-                                       y_loadings_ci=corrci,
-                                       bootsamples=self.bootsamp,))
+            res["bootres"].update(
+                dict(
+                    x_weights_normed=bsrs,
+                    x_weights_stderr=uboot_se,
+                    y_loadings=res["y_loadings"],
+                    y_loadings_boot=distrib,
+                    y_loadings_ci=corrci,
+                    bootsamples=self.bootsamp,
+                )
+            )
 
         # don't keep this as a diagonal matrix
-        res['varexp'] = np.diag(res['singvals'])
-        del res['singvals']
+        res["varexp"] = np.diag(res["singvals"])
+        del res["singvals"]
 
         return res
 
 
 # let's make it a function
-def pls_regression(X, Y, *, n_components=None, n_perm=5000, n_boot=5000,  # noqa: D103
-                   rotate=True, ci=95, aggfunc='mean',
-                   permsamples=None, bootsamples=None,
-                   seed=None, verbose=True, n_proc=None, **kwargs):
-    pls = PLSRegression(X=X, Y=Y, n_components=n_components, n_perm=n_perm,
-                        n_boot=n_boot, rotate=rotate, ci=ci, aggfunc=aggfunc,
-                        permsamples=permsamples, bootsamples=bootsamples,
-                        seed=seed, verbose=verbose, n_proc=n_proc, **kwargs)
+def pls_regression(
+    X,
+    Y,
+    *,
+    n_components=None,
+    n_perm=5000,
+    n_boot=5000,  # noqa: D103
+    rotate=True,
+    ci=95,
+    aggfunc="mean",
+    permsamples=None,
+    bootsamples=None,
+    seed=None,
+    verbose=True,
+    n_proc=None,
+    **kwargs,
+):
+    pls = PLSRegression(
+        X=X,
+        Y=Y,
+        n_components=n_components,
+        n_perm=n_perm,
+        n_boot=n_boot,
+        rotate=rotate,
+        ci=ci,
+        aggfunc=aggfunc,
+        permsamples=permsamples,
+        bootsamples=bootsamples,
+        seed=seed,
+        verbose=verbose,
+        n_proc=n_proc,
+        **kwargs,
+    )
     return pls.results
 
 

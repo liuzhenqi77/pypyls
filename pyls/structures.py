@@ -136,38 +136,56 @@ _pls_input_docs = dict(
     PLS resampling: comparing significance versus reliability across range of
     simulations. In New Perspectives in Partial Least Squares and Related
     Methods (pp. 159-170). Springer, New York, NY. Chicago\
-    """)
+    """),
 )
 
 
 class PLSInputs(ResDict):  # noqa: D101
     allowed = [
-        'X', 'Y', 'groups', 'n_cond', 'n_perm', 'n_boot', 'n_split',
-        'test_split', 'test_size', 'mean_centering', 'covariance', 'rotate',
-        'ci', 'seed', 'verbose', 'n_proc',
-        'bootsamples', 'permsamples', 'custom_permuted_Y',
-        'method', 'n_components', 'aggfunc'
+        "X",
+        "Y",
+        "groups",
+        "n_cond",
+        "n_perm",
+        "n_boot",
+        "n_split",
+        "test_split",
+        "test_size",
+        "mean_centering",
+        "covariance",
+        "rotate",
+        "ci",
+        "seed",
+        "verbose",
+        "n_proc",
+        "bootsamples",
+        "permsamples",
+        "custom_permuted_Y",
+        "method",
+        "n_components",
+        "aggfunc",
     ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        if self.get('n_split') == 0:
-            self['n_split'] = None
+        if self.get("n_split") == 0:
+            self["n_split"] = None
 
-        if self.get('test_split') == 0:
-            self['test_split'] = None
+        if self.get("test_split") == 0:
+            self["test_split"] = None
 
-        if self.get('n_proc') is not None:
-            n_proc = self.get('n_proc')
-            if n_proc == 'max' or n_proc == -1:
-                self['n_proc'] = cpu_count()
+        if self.get("n_proc") is not None:
+            n_proc = self.get("n_proc")
+            if n_proc == "max" or n_proc == -1:
+                self["n_proc"] = cpu_count()
             elif n_proc < 0:
-                self['n_proc'] = cpu_count() + 1 + n_proc
+                self["n_proc"] = cpu_count() + 1 + n_proc
 
-        ts = self.get('test_size')
+        ts = self.get("test_size")
         if ts is not None and (ts < 0 or ts >= 1):
-            raise ValueError('test_size must be in [0, 1). Provided value: {}'
-                             .format(ts))
+            raise ValueError(
+                "test_size must be in [0, 1). Provided value: {}".format(ts)
+            )
 
 
 PLSInputs.__doc__ = dedent("""\
@@ -229,19 +247,28 @@ class PLSResults(ResDict):
     """
 
     allowed = [
-        'x_weights', 'y_weights', 'x_scores', 'y_scores',
-        'y_loadings', 'singvals', 'varexp',
-        'permres', 'bootres', 'splitres', 'cvres', 'inputs'
+        "x_weights",
+        "y_weights",
+        "x_scores",
+        "y_scores",
+        "y_loadings",
+        "singvals",
+        "varexp",
+        "permres",
+        "bootres",
+        "splitres",
+        "cvres",
+        "inputs",
     ]
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         # create all sub-dictionaries
-        self.inputs = PLSInputs(**kwargs.get('inputs', kwargs))
-        self.bootres = PLSBootResults(**kwargs.get('bootres', kwargs))
-        self.permres = PLSPermResults(**kwargs.get('permres', kwargs))
-        self.splitres = PLSSplitHalfResults(**kwargs.get('splitres', kwargs))
-        self.cvres = PLSCrossValidationResults(**kwargs.get('cvres', kwargs))
+        self.inputs = PLSInputs(**kwargs.get("inputs", kwargs))
+        self.bootres = PLSBootResults(**kwargs.get("bootres", kwargs))
+        self.permres = PLSPermResults(**kwargs.get("permres", kwargs))
+        self.splitres = PLSSplitHalfResults(**kwargs.get("splitres", kwargs))
+        self.cvres = PLSCrossValidationResults(**kwargs.get("cvres", kwargs))
 
 
 class PLSBootResults(ResDict):
@@ -279,9 +306,15 @@ class PLSBootResults(ResDict):
     """
 
     allowed = [
-        'x_weights_normed', 'x_weights_stderr', 'bootsamples',
-        'y_loadings', 'y_loadings_boot', 'y_loadings_ci',
-        'contrast', 'contrast_boot', 'contrast_ci'
+        "x_weights_normed",
+        "x_weights_stderr",
+        "bootsamples",
+        "y_loadings",
+        "y_loadings_boot",
+        "y_loadings_ci",
+        "contrast",
+        "contrast_boot",
+        "contrast_ci",
     ]
 
 
@@ -298,9 +331,7 @@ class PLSPermResults(ResDict):
         Resampling array used to permute `S` samples over `P` permutations
     """
 
-    allowed = [
-        'pvals', 'permsamples', 'perm_singval'
-    ]
+    allowed = ["pvals", "permsamples", "perm_singval"]
 
 
 class PLSSplitHalfResults(ResDict):
@@ -327,10 +358,14 @@ class PLSSplitHalfResults(ResDict):
     """
 
     allowed = [
-        'ucorr', 'vcorr',
-        'ucorr_pvals', 'vcorr_pvals',
-        'ucorr_uplim', 'vcorr_uplim',
-        'ucorr_lolim', 'vcorr_lolim'
+        "ucorr",
+        "vcorr",
+        "ucorr_pvals",
+        "vcorr_pvals",
+        "ucorr_uplim",
+        "vcorr_uplim",
+        "ucorr_lolim",
+        "vcorr_lolim",
     ]
 
 
@@ -349,6 +384,4 @@ class PLSCrossValidationResults(ResDict):
         against true behavioral scores across `I` train / test split
     """
 
-    allowed = [
-        'pearson_r', 'r_squared'
-    ]
+    allowed = ["pearson_r", "r_squared"]

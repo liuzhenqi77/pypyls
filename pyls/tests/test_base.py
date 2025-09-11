@@ -62,8 +62,7 @@ def test_gen_permsamp():
     # confirm subject conditions are permuted together
     for g in [g1, g2]:
         for n in range(10):
-            comp = [f + 10 if f < 10 or (f >= 20 and f < 30) else f - 10
-                    for f in g[n]]
+            comp = [f + 10 if f < 10 or (f >= 20 and f < 30) else f - 10 for f in g[n]]
             assert np.all(comp == g[n + 10])
     # confirm subjects perare muted between groups
     comp = np.arange(0, 20)[:, None]
@@ -166,7 +165,7 @@ def test_BasePLS(pls_inputs):
         assert np.all(basepls.inputs[key] == pls_inputs[key])
 
     # test that groups are handled correctly
-    X, n_samples = pls_inputs['X'], len(pls_inputs['X'])
+    X, n_samples = pls_inputs["X"], len(pls_inputs["X"])
     # when not provided, should be calculated
     basepls = pyls.base.BasePLS(X, n_cond=2)
     assert basepls.inputs.groups == [n_samples // 2]
@@ -179,6 +178,6 @@ def test_BasePLS(pls_inputs):
 
     # ensure errors are raised for not implemented
     with pytest.raises(NotImplementedError):
-        basepls.gen_covcorr(pls_inputs['X'], pls_inputs['Y'])
+        basepls.gen_covcorr(pls_inputs["X"], pls_inputs["Y"])
     with pytest.raises(NotImplementedError):
-        basepls.gen_distrib(pls_inputs['X'], pls_inputs['Y'])
+        basepls.gen_distrib(pls_inputs["X"], pls_inputs["Y"])

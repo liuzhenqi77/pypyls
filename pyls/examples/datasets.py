@@ -11,11 +11,12 @@ from ..structures import PLSInputs
 
 try:
     import pandas as pd
+
     pandas_avail = True
 except ImportError:
     pandas_avail = False
 
-with open(resource_filename('pyls', 'examples/datasets.json'), 'r') as src:
+with open(resource_filename("pyls", "examples/datasets.json"), "r") as src:
     _DATASETS = json.load(src)
 
 
@@ -30,16 +31,17 @@ def available_datasets(name=None):
     """
     if name is not None:
         if name not in _DATASETS.keys():
-            raise ValueError('Provided dataset {} is not available. Dataset '
-                             'must be one of: {}.'
-                             .format(name, available_datasets()))
+            raise ValueError(
+                "Provided dataset {} is not available. Dataset "
+                "must be one of: {}.".format(name, available_datasets())
+            )
         else:
             return name
 
     return list(_DATASETS.keys())
 
 
-def query_dataset(name, key='description'):
+def query_dataset(name, key="description"):
     """
     Query dataset `name` for information specified by `key`.
 
@@ -62,9 +64,10 @@ def query_dataset(name, key='description'):
 
     value = _DATASETS.get(name).get(key, None)
     if value is None:
-        raise KeyError('Provided key {} not specified for dataset {}. '
-                       'Available keys are {}'
-                       .format(name, key, list(_DATASETS.get(name).keys())))
+        raise KeyError(
+            "Provided key {} not specified for dataset {}. "
+            "Available keys are {}".format(name, key, list(_DATASETS.get(name).keys()))
+        )
 
     return value
 
@@ -86,7 +89,7 @@ def _get_data_dir(data_dir=None):
         Path to use as data directory
     """
     if data_dir is None:
-        data_dir = os.environ.get('PYLS_DATA', os.path.join('~', 'pyls-data'))
+        data_dir = os.environ.get("PYLS_DATA", os.path.join("~", "pyls-data"))
     data_dir = os.path.expanduser(data_dir)
     if not os.path.exists(data_dir):
         os.makedirs(data_dir)
@@ -128,26 +131,27 @@ def load_dataset(name, data_dir=None, verbose=1, return_reference=False):
     for key, value in _DATASETS.get(name, {}).items():
         if isinstance(value, str) and key in PLSInputs.allowed:
             fname = os.path.join(data_dir, name, value)
-            if fname.endswith('.csv') or fname.endswith('.txt'):
+            if fname.endswith(".csv") or fname.endswith(".txt"):
                 if pandas_avail:
                     value = pd.read_csv(fname, index_col=0)
                 else:
-                    value = np.genfromtxt(fname, skip_header=True,
-                                          delimiter=',')[:, 1:]
-            elif fname.endswith('.npy'):
+                    value = np.genfromtxt(fname, skip_header=True, delimiter=",")[:, 1:]
+            elif fname.endswith(".npy"):
                 value = np.load(fname)
             else:
-                raise ValueError('Cannot recognize datatype of {}. Please '
-                                 'create an issue on GitHub with dataset you '
-                                 'are trying to load ({})'.format(fname, name))
+                raise ValueError(
+                    "Cannot recognize datatype of {}. Please "
+                    "create an issue on GitHub with dataset you "
+                    "are trying to load ({})".format(fname, name)
+                )
         dataset[key] = value
 
     # make some dataset-specific corrections
-    if name == 'whitaker_vertes_2016':
+    if name == "whitaker_vertes_2016":
         dataset.X = dataset.X.T
 
     if return_reference:
-        return dataset, query_dataset(name, 'reference')
+        return dataset, query_dataset(name, "reference")
 
     return dataset
 
@@ -166,11 +170,11 @@ def _get_dataset(name, data_dir=None, verbose=1):
     data_dir = os.path.join(_get_data_dir(data_dir), name)
     os.makedirs(data_dir, exist_ok=True)
 
-    for url in _DATASETS.get(name, {}).get('urls', []):
+    for url in _DATASETS.get(name, {}).get("urls", []):
         parse = urllib.parse.urlparse(url)
         fname = os.path.join(data_dir, os.path.basename(parse.path))
 
         if not os.path.exists(fname):
             out = urllib.request.urlopen(url)
-            with open(fname, 'wb') as dest:
+            with open(fname, "wb") as dest:
                 dest.write(out.read())

@@ -49,4 +49,4 @@ def test_efficient_corr():
     x, y = np.ones((100, 2)), np.ones((100, 2)) * 5
     x[50:, 0], y[50:, 0] = 2, 6
     x[50:, 1], y[50:, 1] = 2, 4
-    assert np.allclose(pyls.compute.efficient_corr(x, y), np.array([1., -1.]))
+    assert np.allclose(pyls.compute.efficient_corr(x, y), np.array([1.0, -1.0]))
