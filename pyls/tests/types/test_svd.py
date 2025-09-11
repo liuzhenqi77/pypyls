@@ -133,6 +133,28 @@ def test_meancentered_multigroup_multicondition(mean_centering, n_split,
                mean_centering=mean_centering, rotate=rotate)
 
 
+def test_custom_permuted_Y():
+    """Test that providing custom permuted Y matrices works as expected."""
+    X = np.random.rand(100, 1000)
+    Y = np.random.rand(100, 200)
+    n_perm = 10
+    perm_indices = np.array([np.random.permutation(100) for _ in range(n_perm)]).T
+    custom_permuted_Y = np.stack(
+        [Y[perm_indices[:, _], :] for _ in range(n_perm)], axis=2)
+
+    res_orig = pyls.behavioral_pls(X, Y, n_perm=10, n_boot=0,
+                                   permsamples=perm_indices,
+                                   seed=1234, n_proc='max', verbose=True)
+
+    res_custom = pyls.behavioral_pls(X, Y, n_perm=10, n_boot=0,
+                                     custom_permuted_Y=custom_permuted_Y,
+                                     seed=1234, n_proc='max', verbose=True)
+
+    assert np.allclose(res_orig["permres"]["pvals"], res_custom["permres"]["pvals"])
+    assert np.allclose(
+        res_orig["permres"]["perm_singval"], res_custom["permres"]["perm_singval"])
+
+
 def test_warnings():
     """Test warning messages for invalid parameter combinations."""
     with pytest.warns(UserWarning):

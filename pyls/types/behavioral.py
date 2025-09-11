@@ -13,6 +13,7 @@ class BehavioralPLS(BasePLS):
     def __init__(self, X, Y, *, groups=None, n_cond=1, n_perm=5000,
                  n_boot=5000, n_split=100, test_size=0.25, test_split=100,
                  covariance=False, rotate=True, ci=95, permsamples=None,
+                 custom_permuted_Y=None,
                  bootsamples=None, seed=None, verbose=True, n_proc=None,
                  **kwargs):
 
@@ -21,6 +22,7 @@ class BehavioralPLS(BasePLS):
                          n_split=n_split, test_size=test_size,
                          test_split=test_split, covariance=covariance,
                          rotate=rotate, ci=ci, permsamples=permsamples,
+                         custom_permuted_Y=custom_permuted_Y,
                          bootsamples=bootsamples, seed=seed, verbose=verbose,
                          n_proc=n_proc, **kwargs)
 
@@ -228,6 +230,7 @@ class BehavioralPLS(BasePLS):
 def behavioral_pls(X, Y, *, groups=None, n_cond=1, n_perm=5000, n_boot=5000,  # noqa: D103
                    n_split=0, test_size=0.25, test_split=100,
                    covariance=False, rotate=True, ci=95, permsamples=None,
+                   custom_permuted_Y=None,
                    bootsamples=None, seed=None, verbose=True, n_proc=None,
                    **kwargs):
     pls = BehavioralPLS(X=X, Y=Y, groups=groups, n_cond=n_cond,
@@ -235,6 +238,7 @@ def behavioral_pls(X, Y, *, groups=None, n_cond=1, n_perm=5000, n_boot=5000,  # 
                         test_size=test_size, test_split=test_split,
                         covariance=covariance, rotate=rotate, ci=ci,
                         permsamples=permsamples, bootsamples=bootsamples,
+                        custom_permuted_Y=custom_permuted_Y,
                         seed=seed, verbose=verbose, n_proc=n_proc, **kwargs)
     return pls.results
 

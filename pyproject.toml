@@ -87,7 +87,6 @@ tag_prefix = ""
 parentdir_prefix = ""
 
 [tool.ruff]
-
 line-length = 88
 exclude = [
   "setup.py",
@@ -114,7 +113,7 @@ convention = "numpy"
 "test_*" = ["B011"]
 
 [tool.pytest.ini_options]
-addopts = "--strict-markers --maxfail=2 -r --pyargs"
+addopts = "--strict-markers --maxfail=2 --pyargs"
 
 [tool.coverage.run]
 source = ["pyls"]

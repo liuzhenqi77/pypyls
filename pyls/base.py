@@ -617,27 +617,60 @@ class BasePLS():  # noqa: D101
         """
         # generate permuted indices (unless already provided)
         self.permsamp = self.inputs.get('permsamples')
-        if self.permsamp is None:
+        self.custom_permuted_Y = self.inputs.get('custom_permuted_Y')
+        if self.permsamp is None and self.custom_permuted_Y is None:
             self.permsamp = gen_permsamp(self.inputs.groups,
                                          self.inputs.n_cond,
                                          self.inputs.n_perm,
                                          seed=seed,
                                          verbose=self.inputs.verbose)
 
+        # check custom permsamples if requested
+        is_sample_permuted = False
+        if self.custom_permuted_Y is not None:
+            if self.custom_permuted_Y.shape[:-1] != Y.shape:
+                raise ValueError('When using custom permutation samples, '
+                                 '`custom_permuted_Y` must have the same '
+                                 'first two dimensions as `Y`.\n'
+                                 '    EXPECTED: {}\n'
+                                 '    ACTUAL:   {}'
+                                 .format(Y.shape[0], self.custom_permuted_Y.shape[:-1]))
+            if self.custom_permuted_Y.shape[-1] != self.inputs.n_perm:
+                raise ValueError('When using custom permutation samples, '
+                                 'the last dimension of `custom_permuted_Y` '
+                                 'must be equal to the requested number of '
+                                 'permutations (i.e., `n_perm`).\n'
+                                 '    EXPECTED: {}\n'
+                                 '    ACTUAL:   {}'
+                                 .format(self.inputs.n_perm,
+                                         self.custom_permuted_Y.shape[-1]))
+            is_sample_permuted = True
+
         # get permuted values (parallelizing as requested)
         gen = utils.trange(self.inputs.n_perm, verbose=self.inputs.verbose,
                            desc='Running permutations')
-        with utils.get_par_func(self.inputs.n_proc,
-                                self.__class__._single_perm) as (par, func):
-            out = par(func(self, X=X, Y=Y, inds=self.permsamp[:, i],
-                           groups=self.dummy, original=self.res['y_weights'],
-                           seed=i)
-                      for i in gen)
+        with utils.get_par_func(
+            self.inputs.n_proc,
+            self.__class__._single_perm
+        ) as (par, func):
+            if is_sample_permuted:
+                out = par(func(self, X=X, Y=Y,
+                               inds=None, Y_permuted=self.custom_permuted_Y[..., i],
+                               groups=self.dummy, original=self.res['y_weights'],
+                               seed=i)
+                          for i in gen)
+            else:
+                out = par(func(self, X=X, Y=Y,
+                               inds=self.permsamp[:, i], Y_permuted=None,
+                            groups=self.dummy, original=self.res['y_weights'],
+                            seed=i)
+                        for i in gen)
         d_perm, ucorrs, vcorrs = [np.stack(o, axis=-1) for o in zip(*out)]
 
         return d_perm, ucorrs, vcorrs
 
-    def _single_perm(self, X, Y, inds, groups=None, original=None, seed=None):
+    def _single_perm(self, X, Y, inds=None, Y_permuted=None,
+                     groups=None, original=None, seed=None):
         """
         Permute `X` (w/o replacement) and recomputes SVD.
 
@@ -649,6 +682,13 @@ class BasePLS():  # noqa: D101
             Input data matrix, where `S` is observations and `T` is features
         inds : (S,) array_like
             Permutation resampling array
+        Y_permuted : (S, T) array_like
+            Pre-permuted `Y` matrix. If provided, `inds` will be ignored.
+        groups : (S, J) array_like
+            Dummy coded input array, where `S` is observations and `J`
+            corresponds to the number of different groups x conditions. A value
+            of 1 indicates that an observation belongs to a specific group or
+            condition.
         original : (J, L) array_like
             Right singular vector from original decomposition of `X` and `Y`.
             Used to perform Procrustes rotation on permuted singular values,
@@ -669,7 +709,10 @@ class BasePLS():  # noqa: D101
             `self.inputs.n_split != 0`
         """
         # calculate SVD of permuted matrices
-        Xp, Yp = self.make_permutation(X, Y, inds)
+        if Y_permuted is not None:
+            Xp, Yp = X, Y_permuted
+        else:
+            Xp, Yp = self.make_permutation(X, Y, inds)
         U, d, V = self.svd(Xp, Yp, groups=groups, seed=seed)
 
         # optionally get rotated/rescaled singular values

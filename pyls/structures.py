@@ -105,13 +105,19 @@ _pls_input_docs = dict(
         Dictionary-like object containing results from the PLS analysis\
     """),
     resamples=dedent("""\
-    permsamples : array_like, optional
-        Re-sampling array to be used during permutation test (if n_perm > 0).
+    permsamples : (S, P) array_like, optional
+        Re-sampling array to be used during permutation test (if n_perm > 0),
+        where `S` is samples and `P` is permutations.
         If not specified a set of unique permutations will be generated.
         Default: None
-    bootsamples : array_like, optional
+    custom_permuted_Y : (S, T, P), optional
+        Custom permuted `Y` array to be used during permutation test (if
+        n_perm > 0), where `S` is samples, `T` is features, and `P` is permutations.
+        If this is provided, `permsamples` is ignored. Default: None
+    bootsamples : (S, R) array_like, optional
         Resampling array to be used during bootstrap resampling (if n_boot >
-        0). If not specified a set of unique bootstraps will be generated.
+        0), where `S` is samples and `R` is resamples. If not specified a set
+        of unique bootstraps will be generated.
         Default: None\
     """),
     references=dedent("""\
@@ -138,7 +144,8 @@ class PLSInputs(ResDict):  # noqa: D101
     allowed = [
         'X', 'Y', 'groups', 'n_cond', 'n_perm', 'n_boot', 'n_split',
         'test_split', 'test_size', 'mean_centering', 'covariance', 'rotate',
-        'ci', 'seed', 'verbose', 'n_proc', 'bootsamples', 'permsamples',
+        'ci', 'seed', 'verbose', 'n_proc',
+        'bootsamples', 'permsamples', 'custom_permuted_Y',
         'method', 'n_components', 'aggfunc'
     ]
 
