@@ -421,11 +421,12 @@ class PLSRegression(BasePLS):
             ) from None
 
         # mean-center here so that our outputs are generated accordingly
-        X -= np.nanmean(X, axis=0, keepdims=True)
+        X_center = np.array(X)
+        X_center -= np.nanmean(X_center, axis=0, keepdims=True)
         Y_agg -= np.nanmean(Y_agg, axis=0, keepdims=True)
-        mask = get_mask(X, Y_agg)
+        mask = get_mask(X_center, Y_agg)
 
-        res = super().run_pls(X, Y_agg)
+        res = super().run_pls(X_center, Y_agg)
         res["y_loadings"] = Y_agg[mask].T @ res["x_scores"][mask]
         res["y_scores"] = np.full((len(Y_agg), self.n_components), np.nan)
         res["y_scores"][mask] = resid_yscores(
@@ -434,7 +435,7 @@ class PLSRegression(BasePLS):
 
         if self.inputs.n_boot > 0:
             # compute bootstraps
-            distrib, u_sum, u_square = self.bootstrap(X, Y, self.rs)
+            distrib, u_sum, u_square = self.bootstrap(X_center, Y, self.rs)
 
             # add original weights back in so we account for those
             bs = res["x_weights"]
