@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Tests for PLS regression methods."""
 
 import numpy as np
 import pytest
@@ -11,6 +11,8 @@ rs = np.random.RandomState(1234)
 
 
 class PLSRegressionTests():
+    """Class to test PLS regression methods with various parameters."""
+
     defaults = pyls.structures.PLSInputs(X=rs.rand(subj, Xf),
                                          Y=rs.rand(subj, Yf),
                                          n_perm=20, n_boot=10,
@@ -26,7 +28,7 @@ class PLSRegressionTests():
 
     def make_outputs(self):
         """
-        Used to make list of expected attributes and shapes for PLS outputs
+        Make list of expected attributes and shapes for PLS outputs.
 
         Returns
         -------
@@ -51,7 +53,7 @@ class PLSRegressionTests():
         return attrs
 
     def confirm_outputs(self):
-        """ Confirms generated outputs are of expected shape / size """
+        """Confirm generated outputs are of expected shape / size."""
         for (attr, shape) in self.make_outputs():
             assert attr in self.output
             assert self.output[attr].shape == shape
@@ -61,6 +63,7 @@ class PLSRegressionTests():
     None, 2, 5, 10, 15
 ])
 def test_regression_onegroup_onecondition(n_components):
+    """Test PLS regression with one group and one condition."""
     PLSRegressionTests(n_components=n_components)
 
 
@@ -68,6 +71,7 @@ def test_regression_onegroup_onecondition(n_components):
     'mean', 'median', 'sum'
 ])
 def test_regression_3dbootstrap(aggfunc):
+    """Test PLS regression with 3D bootstrap arrays and aggregation functions."""
     # confirm providing 3D arrays works
     Y = rs.rand(subj, Yf, 100)
     PLSRegressionTests(Y=Y, n_components=2, aggfunc=aggfunc)
@@ -81,6 +85,7 @@ def test_regression_3dbootstrap(aggfunc):
 
 
 def test_regression_missingdata():
+    """Test PLS regression with missing data in X and Y matrices."""
     X = rs.rand(subj, Xf)
     X[10] = np.nan
     PLSRegressionTests(X=X, n_components=2)
@@ -92,6 +97,7 @@ def test_regression_missingdata():
 
 
 def test_errors():
+    """Test error handling for invalid input parameters."""
     with pytest.raises(ValueError):
         PLSRegressionTests(n_components=1000)
     with pytest.raises(ValueError):

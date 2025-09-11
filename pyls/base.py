@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Base PLS class and resampling functions."""
 
 import gc
 import warnings
@@ -9,7 +9,7 @@ from . import compute, structures, utils
 
 def gen_permsamp(groups, n_cond, n_perm, seed=None, verbose=True):
     """
-    Generates permutation arrays for PLS permutation testing
+    Generate permutation arrays for PLS permutation testing.
 
     Parameters
     ----------
@@ -71,7 +71,7 @@ def gen_permsamp(groups, n_cond, n_perm, seed=None, verbose=True):
         # generate a new one, just warn that we're using duplicate
         # permutations and give up
         if count == 500 and not warned:
-            warnings.warn('WARNING: Duplicate permutations used.')
+            warnings.warn('WARNING: Duplicate permutations used.', stacklevel=2)
             warned = True
         # store the permuted indices
         permsamp[:, i] = perminds
@@ -81,7 +81,7 @@ def gen_permsamp(groups, n_cond, n_perm, seed=None, verbose=True):
 
 def gen_bootsamp(groups, n_cond, n_boot, seed=None, verbose=True):
     """
-    Generates bootstrap arrays for PLS bootstrap resampling
+    Generate bootstrap arrays for PLS bootstrap resampling.
 
     Parameters
     ----------
@@ -151,7 +151,7 @@ def gen_bootsamp(groups, n_cond, n_boot, seed=None, verbose=True):
         # generate a new one, just warn that we're using duplicate
         # bootstraps and give up
         if count == 500 and not warned:
-            warnings.warn('WARNING: Duplicate bootstraps used.')
+            warnings.warn('WARNING: Duplicate bootstraps used.', stacklevel=2)
             warned = True
         # store the bootstrapped indices
         bootsamp[:, i] = bootinds
@@ -161,7 +161,7 @@ def gen_bootsamp(groups, n_cond, n_boot, seed=None, verbose=True):
 
 def gen_splits(groups, n_cond, n_split, seed=None, test_size=0.5):
     """
-    Generates splitting arrays for PLS split-half resampling and CV
+    Generate splitting arrays for PLS split-half resampling and CV.
 
     Parameters
     ----------
@@ -222,14 +222,14 @@ def gen_splits(groups, n_cond, n_split, seed=None, test_size=0.5):
             if dupe_seq.all(axis=0).any():
                 duplicated = True
         if count == 500 and not warned:
-            warnings.warn('WARNING: Duplicate split halves used.')
+            warnings.warn('WARNING: Duplicate split halves used.', stacklevel=2)
             warned = True
         splitsamp[:, i] = half
 
     return splitsamp
 
 
-class BasePLS():
+class BasePLS():  # noqa: D101
     """
     Base PLS class to be subclassed
 
@@ -247,7 +247,6 @@ class BasePLS():
 
     References
     ----------
-
     {references}
     """.format(**structures._pls_input_docs)
 
@@ -289,11 +288,11 @@ class BasePLS():
             warnings.warn('Setting n_proc > 1 requires the joblib module. '
                           'Considering installing joblib and re-running this '
                           'if you would like parallelization. Resetting '
-                          'n_proc to 1 for now.')
+                          'n_proc to 1 for now.', stacklevel=2)
 
     def gen_covcorr(self, X, Y, groups=None):
         """
-        Should generate cross-covariance array to be used in `self._svd()`
+        Generate cross-covariance array to be used in `self._svd()`.
 
         Must accept the listed parameters and return one array
 
@@ -311,12 +310,11 @@ class BasePLS():
         crosscov : np.ndarray
             Covariance array for decomposition
         """
-
         raise NotImplementedError
 
     def gen_distrib(self, X, Y, groups=None, original=None):
         """
-        Should generate behavioral correlations or contrast for bootstrap
+        Generate behavioral correlations or contrast for bootstrap.
 
         Parameters
         ----------
@@ -335,12 +333,11 @@ class BasePLS():
         distrib : (T, L)
             Behavioral correlations or contrast for single bootstrap resample
         """
-
         raise NotImplementedError
 
     def run_pls(self, X, Y):
         """
-        Runs PLS analysis
+        Run PLS analysis.
 
         Parameters
         ----------
@@ -354,7 +351,6 @@ class BasePLS():
         results : :obj:`pyls.structures.PLSResults`
             Results of PLS (not including PLS type-specific outputs)
         """
-
         # initate results structure
         self.res = res = structures.PLSResults(inputs=self.inputs)
 
@@ -400,7 +396,7 @@ class BasePLS():
 
     def svd(self, X, Y, groups=None, seed=None):
         """
-        Runs SVD on cross-covariance matrix computed from `X` and `Y`
+        Run SVD on cross-covariance matrix computed from `X` and `Y`.
 
         Parameters
         ----------
@@ -425,7 +421,6 @@ class BasePLS():
         V : (J, L) `numpy.ndarray`
             Right singular vectors from singular value decomposition
         """
-
         # make dummy-coded grouping array if not provided
         if groups is None:
             groups = utils.dummy_code(self.inputs.groups, self.inputs.n_cond)
@@ -438,7 +433,7 @@ class BasePLS():
 
     def bootstrap(self, X, Y, seed=None):
         """
-        Bootstraps `X` and `Y` (w/replacement) and recomputes SVD
+        Bootstrap `X` and `Y` (w/replacement) and recomputes SVD.
 
         Parameters
         ----------
@@ -459,7 +454,6 @@ class BasePLS():
         u_square : (B, L) numpy.ndarray
             Sum of the squared left singular vectors across all bootstraps
         """
-
         # generate bootstrap resampled indices (unless already provided)
         self.bootsamp = self.inputs.get('bootsamples', None)
         if self.bootsamp is None:
@@ -529,7 +523,7 @@ class BasePLS():
 
     def _single_boot(self, X, Y, inds, groups=None, original=None, seed=None):
         """
-        Bootstraps `X` and `Y` (w/replacement) and recomputes SVD
+        Bootstrap `X` and `Y` (w/replacement) and recomputes SVD.
 
         Parameters
         ----------
@@ -558,7 +552,6 @@ class BasePLS():
             Left singular vectors from decomposition of bootstrap resampled `X`
             and `Y`
         """
-
         # make sure we have original (non-bootstrapped) singular vectors
         # these are required for the procrustes rotation to ensure our
         # singular vectors are all in the same orientation
@@ -577,7 +570,7 @@ class BasePLS():
 
     def make_permutation(self, X, Y, perminds):
         """
-        Permutes `Y` according to `perminds`, leaving `X` un-permuted
+        Permute `Y` according to `perminds`, leaving `X` un-permuted.
 
         Parameters
         ----------
@@ -595,12 +588,11 @@ class BasePLS():
         Yp : (S, T) array_like
             `Y`, permuted according to `perminds`
         """
-
         return X, Y[perminds]
 
     def permutation(self, X, Y, seed=None):
         """
-        Permutes `X` (w/o replacement) and recomputes SVD
+        Permute `X` (w/o replacement) and recomputes SVD.
 
         Parameters
         ----------
@@ -623,7 +615,6 @@ class BasePLS():
             Split-half correlations of right singular values. Only set if
             `self.inputs.n_split != 0`
         """
-
         # generate permuted indices (unless already provided)
         self.permsamp = self.inputs.get('permsamples')
         if self.permsamp is None:
@@ -648,7 +639,7 @@ class BasePLS():
 
     def _single_perm(self, X, Y, inds, groups=None, original=None, seed=None):
         """
-        Permutes `X` (w/o replacement) and recomputes SVD
+        Permute `X` (w/o replacement) and recomputes SVD.
 
         Parameters
         ----------
@@ -677,7 +668,6 @@ class BasePLS():
             Split-half correlations of right singular values. Only set if
             `self.inputs.n_split != 0`
         """
-
         # calculate SVD of permuted matrices
         Xp, Yp = self.make_permutation(X, Y, inds)
         U, d, V = self.svd(Xp, Yp, groups=groups, seed=seed)
@@ -703,6 +693,8 @@ class BasePLS():
 
     def split_half(self, X, Y, ud=None, vd=None, groups=None, seed=None):
         """
+        Split `X` and `Y` in half (w/o replacement) and recomputes SVD.
+
         Parameters
         ----------
         X : (S, B) array_like
@@ -723,7 +715,6 @@ class BasePLS():
         vcorr : (L,) `numpy.ndarray`
             Average correlation of right singular vectors across split-halves
         """
-
         # generate splits
         splitsamp = gen_splits(self.inputs.groups,
                                self.inputs.n_cond,

@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Tests for the base module."""
 
 import numpy as np
 import pytest
@@ -12,6 +12,7 @@ import pyls
 # has time for right now.
 # thus, we get repetitive tests to make sure that nothing is screwed up!
 def test_gen_permsamp():
+    """Test the gen_permsamp function for generating permutation samples."""
     # test to make sure that there are no duplicates generated given a
     # sufficiently large number of samples / conditions to work with
     unique_perms = pyls.base.gen_permsamp([10, 10], 2, seed=1234, n_perm=10)
@@ -71,6 +72,7 @@ def test_gen_permsamp():
 
 
 def test_gen_bootsamp():
+    """Test the gen_bootsamp function for generating bootstrap samples."""
     # test to make sure that there are no duplicates generated given a
     # sufficiently large number of samples / conditions to work with
     unique_boots = pyls.base.gen_bootsamp([10, 10], 2, seed=1234, n_boot=10)
@@ -116,6 +118,7 @@ def test_gen_bootsamp():
 
 
 def test_gen_splitsamp():
+    """Test the gen_splitsamp function for generating split samples."""
     # test to make sure that there are no duplicates generated given a
     # sufficiently large number of samples / conditions to work with
     unique_splits = pyls.base.gen_splits([10, 10], 2, seed=1234, n_split=10)
@@ -155,6 +158,7 @@ def test_gen_splitsamp():
 
 
 def test_BasePLS(pls_inputs):
+    """Test the BasePLS base class functionality and input validation."""
     # test that BasePLS accepts all inputs and stores them correctly
     basepls = pyls.base.BasePLS(**pls_inputs)
     for key in pls_inputs.keys():

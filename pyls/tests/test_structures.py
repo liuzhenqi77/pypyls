@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Tests for the structures module."""
 
 import multiprocessing as mp
 import numpy as np
@@ -7,6 +7,7 @@ from pyls import structures
 
 
 def test_PLSInputs(pls_inputs):
+    """Test PLSInputs structure initialization and validation."""
     # check correct handling of all available PLSInputs keys
     pls_inputs = structures.PLSInputs(**pls_inputs)
     for key in pls_inputs.keys():
@@ -35,24 +36,29 @@ def test_PLSInputs(pls_inputs):
 
 @pytest.mark.xfail
 def test_PLSResults():
+    """Test PLSResults structure functionality."""
     assert False
 
 
 @pytest.mark.xfail
 def test_PLSBootResults():
+    """Test PLSBootResults structure functionality."""
     assert False
 
 
 @pytest.mark.xfail
 def test_PLSPermResults():
+    """Test PLSPermResults structure functionality."""
     assert False
 
 
 @pytest.mark.xfail
 def test_PLSSplitHalfResults():
+    """Test PLSSplitHalfResults structure functionality."""
     assert False
 
 
 @pytest.mark.xfail
 def test_PLSCrossValidationResults():
+    """Test PLSCrossValidationResults structure functionality."""
     assert False

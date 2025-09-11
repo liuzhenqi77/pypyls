@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Functions for importing PLS results from Matlab."""
 
 from collections.abc import MutableMapping
 
@@ -60,7 +60,7 @@ _behavioral_mapping = (
 
 def _coerce_void(value):
     """
-    Converts `value` to `value.dtype`
+    Convert `value` to `value.dtype`.
 
     Parameters
     ----------
@@ -71,7 +71,6 @@ def _coerce_void(value):
     value : dtype
         `Value` coerced to `dtype`
     """
-
     if np.squeeze(value).ndim == 0:
         return value.dtype.type(value.squeeze())
     else:
@@ -80,7 +79,7 @@ def _coerce_void(value):
 
 def _flatten(d, parent_key='', sep='_'):
     """
-    Flattens nested dictionary `d` into single dictionary with new keyset
+    Flatten nested dictionary `d` into single dictionary with new keyset.
 
     Parameters
     ----------
@@ -100,7 +99,6 @@ def _flatten(d, parent_key='', sep='_'):
     -----
     Taken directly from https://stackoverflow.com/a/6027615
     """
-
     items = []
     for k, v in d.items():
         new_key = parent_key + sep + k if parent_key else k
@@ -113,7 +111,7 @@ def _flatten(d, parent_key='', sep='_'):
 
 def _rename_keys(d, mapping):
     """
-    Renames keys in dictionary `d` based on tuples in `mapping`
+    Rename keys in dictionary `d` based on tuples in `mapping`.
 
     Parameters
     ----------
@@ -127,7 +125,6 @@ def _rename_keys(d, mapping):
     renamed : dict
         Input dictionary `d` with keys renamed
     """
-
     new_dict = d.copy()
     for oldkey, newkey in mapping:
         try:
@@ -140,7 +137,7 @@ def _rename_keys(d, mapping):
 
 def import_matlab_result(fname, datamat='datamat_lst'):
     """
-    Imports `fname` PLS result from Matlab
+    Import `fname` PLS result from Matlab.
 
     Parameters
     ----------
@@ -171,7 +168,7 @@ def import_matlab_result(fname, datamat='datamat_lst'):
     try:
         result = matfile.get('result')[0, 0]
     except (IndexError, TypeError):
-        raise ValueError('Cannot get result struct from provided mat file')
+        raise ValueError('Cannot get result struct from provided mat file') from None
 
     # convert result structure to a dictionary using dtypes as keys
     labels = get_labels(result.dtype.fields)

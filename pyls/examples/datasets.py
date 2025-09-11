@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Functions and utilities for getting datasets for PLS examples
-"""
+"""Functions and utilities for getting datasets for PLS examples."""
 
 import json
 import os
@@ -24,14 +21,13 @@ with open(resource_filename('pyls', 'examples/datasets.json'), 'r') as src:
 
 def available_datasets(name=None):
     """
-    Lists available datasets to download
+    List available datasets to download.
 
     Returns
     -------
     datasets : list
         List of available datasets
     """
-
     if name is not None:
         if name not in _DATASETS.keys():
             raise ValueError('Provided dataset {} is not available. Dataset '
@@ -45,7 +41,7 @@ def available_datasets(name=None):
 
 def query_dataset(name, key='description'):
     """
-    Queries dataset `name` for information specified by `key`
+    Query dataset `name` for information specified by `key`.
 
     Parameters
     ----------
@@ -60,7 +56,6 @@ def query_dataset(name, key='description'):
     value
         Value specified by `key` for dataset `name`
     """
-
     name = available_datasets(name)
     if key is None:
         return list(_DATASETS.get(name).keys())
@@ -76,7 +71,7 @@ def query_dataset(name, key='description'):
 
 def _get_data_dir(data_dir=None):
     """
-    Gets path to pyls data directory
+    Get path to pyls data directory.
 
     Parameters
     ----------
@@ -90,7 +85,6 @@ def _get_data_dir(data_dir=None):
     data_dir : str
         Path to use as data directory
     """
-
     if data_dir is None:
         data_dir = os.environ.get('PYLS_DATA', os.path.join('~', 'pyls-data'))
     data_dir = os.path.expanduser(data_dir)
@@ -102,7 +96,7 @@ def _get_data_dir(data_dir=None):
 
 def load_dataset(name, data_dir=None, verbose=1, return_reference=False):
     """
-    Loads dataset provided by `name` into a :obj:`PLSInputs` object
+    Load dataset provided by `name` into a :obj:`PLSInputs` object.
 
     Parameters
     ----------
@@ -126,7 +120,6 @@ def load_dataset(name, data_dir=None, verbose=1, return_reference=False):
         Rerun the analysis by calling :func:`pyls.behavioral_pls(**dataset)` or
         :func:`pyls.meancentered_pls(**dataset)`, as appropriate
     """
-
     name = available_datasets(name)
     data_dir = _get_data_dir(data_dir)
     _get_dataset(name, data_dir, verbose=verbose)
@@ -161,7 +154,7 @@ def load_dataset(name, data_dir=None, verbose=1, return_reference=False):
 
 def _get_dataset(name, data_dir=None, verbose=1):
     """
-    Downloads dataset defined by `name`
+    Download dataset defined by `name`.
 
     Parameters
     ----------
@@ -170,7 +163,6 @@ def _get_dataset(name, data_dir=None, verbose=1):
     data_dir : str
         Path to use as data directory to store dataset
     """
-
     data_dir = os.path.join(_get_data_dir(data_dir), name)
     os.makedirs(data_dir, exist_ok=True)
 

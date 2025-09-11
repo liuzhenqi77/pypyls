@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Partial least squares regression (PLS-R)."""
 
 import numpy as np
 from ..base import BasePLS, gen_bootsamp
@@ -8,7 +8,7 @@ from .. import compute
 
 def resid_yscores(x_scores, y_scores, copy=True):
     """
-    Orthogonalizes `y_scores` with respect to preceding `x_scores`
+    Orthogonalizs `y_scores` with respect to preceding `x_scores`.
 
     Residualizes each column of `y_scores` against all previous columns of
     `x_scores` such that the column represents only the "new" contributions of
@@ -29,7 +29,6 @@ def resid_yscores(x_scores, y_scores, copy=True):
     y_scores : (S, L) numpy.ndarray
         Residualized `y_scores`
     """
-
     x_scores = np.array(x_scores)
     y_scores = np.array(y_scores, copy=copy)
 
@@ -46,16 +45,14 @@ def resid_yscores(x_scores, y_scores, copy=True):
 
 
 def get_mask(X, Y):
-    """ Returns mask removing rows where either X/Y contain all NaN values
-    """
-
+    """Return mask removing rows where either X/Y contain all NaN values."""
     return np.logical_not(np.logical_or(np.all(np.isnan(X), axis=1),
                                         np.all(np.isnan(Y), axis=1)))
 
 
 def simpls(X, Y, n_components=None, seed=1234):
     """
-    Performs partial least squares regression with the SIMPLS algorithm
+    Perform partial least squares regression with the SIMPLS algorithm.
 
     Parameters
     ----------
@@ -80,7 +77,6 @@ def simpls(X, Y, n_components=None, seed=1234):
     ----------
     https://www.mathworks.com/help/stats/plsregress.html
     """
-
     X, Y = np.asanyarray(X), np.asanyarray(Y)
     if n_components is None:
         n_components = min(len(X) - 1, X.shape[1])
@@ -123,7 +119,7 @@ def simpls(X, Y, n_components=None, seed=1234):
         # update the orthonormal basis with modified Gram Schmidt; repeat twice
         # for additional stability
         vi = x_loadings[:, [comp]]
-        for repeat in range(2):
+        for _ in range(2):
             for j in range(comp):
                 vj = V[:, [j]]
                 vi = vi - ((vj.T @ vi) * vj)
@@ -148,7 +144,7 @@ def simpls(X, Y, n_components=None, seed=1234):
 
     # calculate betas and add intercept
     beta = x_weights @ y_loadings.T
-    beta = np.row_stack([Y.mean(axis=0) - (X.mean(axis=0) @ beta), beta])
+    beta = np.vstack([Y.mean(axis=0) - (X.mean(axis=0) @ beta), beta])
 
     # percent variance explained for both X and Y for all components
     pctvar = [
@@ -187,6 +183,8 @@ def simpls(X, Y, n_components=None, seed=1234):
 
 
 class PLSRegression(BasePLS):
+    """Partial least squares regression (PLS-R)."""
+
     def __init__(self, X, Y, *, n_components=None,
                  n_perm=5000, n_boot=5000,
                  rotate=True, ci=95, aggfunc='mean',
@@ -219,7 +217,7 @@ class PLSRegression(BasePLS):
                 # of `Y`, and the second row is an array of arrays, each of
                 # which is the size of the third dim of `Y`
                 bootsamples = np.asarray(bootsamples)
-                s, c = [np.row_stack(b).shape[-1] for b in bootsamples]
+                s, c = [np.vstack(b).shape[-1] for b in bootsamples]
                 sexp, cexp = Y.shape[0], Y.shape[-1]
                 if bootsamples.shape != (2, n_boot) or s != sexp or c != cexp:
                     raise ValueError('Provided bootsamples arrays does not '
@@ -247,7 +245,7 @@ class PLSRegression(BasePLS):
 
     def svd(self, X, Y, seed=None):
         """
-        Runs PLS decomposition with `X` and `Y`
+        Run PLS decomposition with `X` and `Y`.
 
         Parameters
         ----------
@@ -266,7 +264,6 @@ class PLSRegression(BasePLS):
         varexp : (L, L) numpy.ndarray
             Variance explained by PLS-derived components; diagonal array
         """
-
         # find nan rows and mask for the decomposition
         mask = get_mask(X, Y)
         out = simpls(X[mask], Y[mask], self.n_components, seed=seed)
@@ -278,7 +275,7 @@ class PLSRegression(BasePLS):
 
     def _single_boot(self, X, Y, inds, groups=None, original=None, seed=None):
         """
-        Bootstraps `X` and `Y` (w/replacement) and recomputes PLS decomposition
+        Bootstrap `X` and `Y` (w/replacement) and recomputes PLS decomposition.
 
         Parameters
         ----------
@@ -303,7 +300,6 @@ class PLSRegression(BasePLS):
         x_weights : (B, L) np.ndarray
             Weights of `X` from PLS decomposition of resampled data
         """
-
         # if we have a 3d `Y` matrix then our bootstrap matrix is complicated
         if Y.ndim == 3:
             sboot, cboot = inds
@@ -328,7 +324,7 @@ class PLSRegression(BasePLS):
 
     def _single_perm(self, X, Y, inds, groups=None, original=None, seed=None):
         """
-        Permutes `Y` (w/o replacement) and recomputes PLS decomposition
+        Permute `Y` (w/o replacement) and recomputes PLS decomposition.
 
         Parameters
         ----------
@@ -351,7 +347,6 @@ class PLSRegression(BasePLS):
         varexp : (L,) `numpy.ndarray`
             Variance explained by PLS decomposition of permuted data
         """
-
         # should permute Y (but not X) by default
         Xp, Yp = self.make_permutation(X, Y, inds)
         x_weights, varexp, _ = self.svd(Xp, Yp, seed=seed)
@@ -374,7 +369,7 @@ class PLSRegression(BasePLS):
 
     def run_pls(self, X, Y):
         """
-        Runs PLS analysis
+        Run PLS analysis.
 
         Parameters
         ----------
@@ -383,13 +378,12 @@ class PLSRegression(BasePLS):
         Y : (S, T) array_like
             Input data matrix, where `S` is observations and `T` is features
         """
-
         try:
             Y_agg = self.aggfunc(Y, axis=-1) if Y.ndim == 3 else Y
         except TypeError:
             raise TypeError('Provided callable `aggfun` must accept `axis` '
                             'keyword argument to condense an array along '
-                            'the specified axis.')
+                            'the specified axis.') from None
 
         # mean-center here so that our outputs are generated accordingly
         X -= np.nanmean(X, axis=0, keepdims=True)
@@ -429,7 +423,7 @@ class PLSRegression(BasePLS):
 
 
 # let's make it a function
-def pls_regression(X, Y, *, n_components=None, n_perm=5000, n_boot=5000,
+def pls_regression(X, Y, *, n_components=None, n_perm=5000, n_boot=5000,  # noqa: D103
                    rotate=True, ci=95, aggfunc='mean',
                    permsamples=None, bootsamples=None,
                    seed=None, verbose=True, n_proc=None, **kwargs):

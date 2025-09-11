@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Tests for the utility functions."""
 
 import numpy as np
 from pyls import utils
@@ -7,6 +7,7 @@ import tqdm
 
 
 def test_empty_dict():
+    """Test the _empty_dict utility function."""
     assert utils._empty_dict({})
     assert utils._empty_dict(dict())
     assert not utils._empty_dict(dict(d=10))
@@ -20,6 +21,7 @@ def test_empty_dict():
 
 
 def test_not_empty_keys():
+    """Test the _not_empty_keys utility function."""
     assert utils._not_empty_keys(dict()) == set()
     assert utils._not_empty_keys(dict(test=10)) == {'test'}
     assert utils._not_empty_keys(dict(test=10, temp=None)) == {'test'}
@@ -30,6 +32,7 @@ def test_not_empty_keys():
 
 
 def test_ResDict():
+    """Test the ResDict class."""
     # toy example with some allowed keys
     class TestDict(utils.ResDict):
         allowed = ['test', 'temp']
@@ -84,6 +87,7 @@ def test_ResDict():
 
 
 def test_trange():
+    """Test the trange utility function for progress bar functionality."""
     # test that verbose=False generates a range object
     out = utils.trange(1000, verbose=False, desc='Test tqdm')
     assert [f for f in out] == list(range(1000))
@@ -93,6 +97,7 @@ def test_trange():
 
 
 def test_dummy_label():
+    """Test the dummy_label utility function."""
     groups = [10, 12, 11]
     expected = [[10, 12, 11], [10, 10, 12, 12, 11, 11]]
     for n_cond in range(1, 3):
@@ -104,6 +109,7 @@ def test_dummy_label():
 
 
 def test_dummy_code():
+    """Test the dummy_code utility function."""
     groups = [10, 12, 11]
     expected = [[10, 12, 11], [10, 10, 12, 12, 11, 11]]
     for n_cond in range(1, 3):
@@ -115,6 +121,7 @@ def test_dummy_code():
 
 
 def test_permute_cols():
+    """Test the permute_cols utility function."""
     x = np.arange(9).reshape(3, 3)
     expected = np.array([[0, 1, 5], [6, 4, 2], [3, 7, 8]])
 
@@ -127,6 +134,7 @@ def test_permute_cols():
 
 
 def test_unravel():
+    """Test the _unravel context manager utility function."""
     expected = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
     assert utils._unravel()(range(10)) == expected
     expected = [0, 1, 4, 9, 16, 25, 36, 49, 64, 81]
@@ -138,6 +146,7 @@ def test_unravel():
 
 
 def test_get_par_func():
+    """Test the get_par_func utility function."""
     def fcn(x):
         return x
     assert fcn(10) == 10

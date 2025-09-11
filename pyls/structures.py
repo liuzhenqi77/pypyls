@@ -1,7 +1,4 @@
-# -*- coding: utf-8 -*-
-"""
-Data structures to hold PLS inputs and results objects
-"""
+"""Data structures to hold PLS inputs and results objects."""
 
 from multiprocessing import cpu_count
 from textwrap import dedent
@@ -137,7 +134,7 @@ _pls_input_docs = dict(
 )
 
 
-class PLSInputs(ResDict):
+class PLSInputs(ResDict):  # noqa: D101
     allowed = [
         'X', 'Y', 'groups', 'n_cond', 'n_perm', 'n_boot', 'n_split',
         'test_split', 'test_size', 'mean_centering', 'covariance', 'rotate',
@@ -191,7 +188,7 @@ PLSInputs.__doc__ = dedent("""\
 
 class PLSResults(ResDict):
     r"""
-    Dictionary-like object containing results of PLS analysis
+    Dictionary-like object containing results of PLS analysis.
 
     Attributes
     ----------
@@ -223,6 +220,7 @@ class PLSResults(ResDict):
     inputs : :obj:`~.structures.PLSInputs`
         Inputs provided to original PLS
     """
+
     allowed = [
         'x_weights', 'y_weights', 'x_scores', 'y_scores',
         'y_loadings', 'singvals', 'varexp',
@@ -241,7 +239,7 @@ class PLSResults(ResDict):
 
 class PLSBootResults(ResDict):
     """
-    Dictionary-like object containing results of PLS bootstrap resampling
+    Dictionary-like object containing results of PLS bootstrap resampling.
 
     Attributes
     ----------
@@ -272,6 +270,7 @@ class PLSBootResults(ResDict):
     bootsamples : (S, R) `numpy.ndarray`
         Indices of bootstrapped samples `S` across `R` resamples.
     """
+
     allowed = [
         'x_weights_normed', 'x_weights_stderr', 'bootsamples',
         'y_loadings', 'y_loadings_boot', 'y_loadings_ci',
@@ -281,7 +280,7 @@ class PLSBootResults(ResDict):
 
 class PLSPermResults(ResDict):
     """
-    Dictionary-like object containing results of PLS permutation testing
+    Dictionary-like object containing results of PLS permutation testing.
 
     Attributes
     ----------
@@ -291,6 +290,7 @@ class PLSPermResults(ResDict):
     permsamples : (S, P) `numpy.ndarray`
         Resampling array used to permute `S` samples over `P` permutations
     """
+
     allowed = [
         'pvals', 'permsamples', 'perm_singval'
     ]
@@ -298,7 +298,7 @@ class PLSPermResults(ResDict):
 
 class PLSSplitHalfResults(ResDict):
     """
-    Dictionary-like object containing results of PLS split-half resampling
+    Dictionary-like object containing results of PLS split-half resampling.
 
     Attributes
     ----------
@@ -318,6 +318,7 @@ class PLSSplitHalfResults(ResDict):
         Lower bound of confidence interval for correlations between split
         halves for left/right singular vectors
     """
+
     allowed = [
         'ucorr', 'vcorr',
         'ucorr_pvals', 'vcorr_pvals',
@@ -328,7 +329,7 @@ class PLSSplitHalfResults(ResDict):
 
 class PLSCrossValidationResults(ResDict):
     """
-    Dictionary-like object containing results of PLS cross-validation testing
+    Dictionary-like object containing results of PLS cross-validation testing.
 
     Attributes
     ----------
@@ -340,6 +341,7 @@ class PLSCrossValidationResults(ResDict):
         Pearson's correlation for each of `T` predicted behavioral scores
         against true behavioral scores across `I` train / test split
     """
+
     allowed = [
         'pearson_r', 'r_squared'
     ]

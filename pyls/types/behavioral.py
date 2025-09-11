@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Behavioral PLS."""
 
 import numpy as np
 from sklearn.metrics import r2_score
@@ -8,6 +8,8 @@ from .. import compute, utils
 
 
 class BehavioralPLS(BasePLS):
+    """Behavioral PLS."""
+
     def __init__(self, X, Y, *, groups=None, n_cond=1, n_perm=5000,
                  n_boot=5000, n_split=100, test_size=0.25, test_split=100,
                  covariance=False, rotate=True, ci=95, permsamples=None,
@@ -26,7 +28,7 @@ class BehavioralPLS(BasePLS):
 
     def gen_covcorr(self, X, Y, groups, **kwargs):
         """
-        Computes cross-covariance matrix from `X` and `Y`
+        Compute cross-covariance matrix from `X` and `Y`.
 
         Parameters
         ----------
@@ -45,15 +47,14 @@ class BehavioralPLS(BasePLS):
         crosscov : (J*T, B) np.ndarray
             Cross-covariance matrix
         """
-
-        return np.row_stack([
+        return np.vstack([
             compute.xcorr(X[grp], Y[grp], covariance=self.inputs.covariance)
             for grp in groups.T.astype(bool)
         ])
 
     def gen_distrib(self, X, Y, original, groups, *args, **kwargs):
         """
-        Finds behavioral correlations for single bootstrap resample
+        Find behavioral correlations for single bootstrap resample.
 
         Parameters
         ----------
@@ -74,14 +75,13 @@ class BehavioralPLS(BasePLS):
         distrib : (T, L)
             Behavioral correlations for single bootstrap resample
         """
-
         tusc = X @ compute.normalize(original)
 
         return self.gen_covcorr(tusc, Y, groups=groups)
 
     def crossval(self, X, Y, groups=None, seed=None):
         """
-        Performs cross-validation of SVD of `X` and `Y`
+        Perform cross-validation of SVD of `X` and `Y`.
 
         Parameters
         ----------
@@ -99,7 +99,6 @@ class BehavioralPLS(BasePLS):
         r2_scores : (C,) np.ndarray
             R^2 (coefficient of determination) scores across train-test splits
         """
-
         if groups is None:
             groups = utils.dummy_code(self.inputs.groups, self.inputs.n_cond)
 
@@ -125,7 +124,7 @@ class BehavioralPLS(BasePLS):
 
     def _single_crossval(self, X, Y, inds, groups=None, seed=None):
         """
-        Generates single cross-validated r and r^2 score
+        Generate single cross-validated r and r^2 score.
 
         Parameters
         ----------
@@ -144,7 +143,6 @@ class BehavioralPLS(BasePLS):
         seed : {int, :obj:`numpy.random.RandomState`, None}, optional
             Seed for random number generation. Default: None
         """
-
         if groups is None:
             groups = utils.dummy_code(self.inputs.groups, self.inputs.n_cond)
 
@@ -161,7 +159,7 @@ class BehavioralPLS(BasePLS):
             rescaled = compute.rescale_test(X_train[tr_grp], X_test[te_grp],
                                             Y_train[tr_grp], U, V_spl)
             Y_pred.append(rescaled)
-        Y_pred = np.row_stack(Y_pred)
+        Y_pred = np.vstack(Y_pred)
 
         # calculate r & r-squared from comp of rescaled test & true values
         r_scores = compute.efficient_corr(Y_test, Y_pred)
@@ -171,7 +169,7 @@ class BehavioralPLS(BasePLS):
 
     def run_pls(self, X, Y):
         """
-        Runs PLS analysis
+        Run PLS analysis.
 
         Parameters
         ----------
@@ -180,7 +178,6 @@ class BehavioralPLS(BasePLS):
         Y : (S, T) array_like
             Input data matrix, where `S` is observations and `T` is features
         """
-
         res = super().run_pls(X, Y)
 
         # mechanism for splitting outputs along group / condition indices
@@ -228,7 +225,7 @@ class BehavioralPLS(BasePLS):
 
 
 # let's make it a function
-def behavioral_pls(X, Y, *, groups=None, n_cond=1, n_perm=5000, n_boot=5000,
+def behavioral_pls(X, Y, *, groups=None, n_cond=1, n_perm=5000, n_boot=5000,  # noqa: D103
                    n_split=0, test_size=0.25, test_split=100,
                    covariance=False, rotate=True, ci=95, permsamples=None,
                    bootsamples=None, seed=None, verbose=True, n_proc=None,

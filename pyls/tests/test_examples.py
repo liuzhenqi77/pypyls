@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+"""Tests for the examples module."""
 
 import os
 import pytest
@@ -10,6 +10,7 @@ DATASETS = [
 
 
 def test_available_datasets():
+    """Test the available_datasets function for listing and validating dataset names."""
     # make sure we get a list of strings when called with no arguments
     avail = pyls.examples.available_datasets()
     assert isinstance(avail, list)
@@ -45,6 +46,7 @@ def test_available_datasets():
     ])
 ])
 def test_query_dataset(dataset, keys):
+    """Test querying dataset information for valid keys and data."""
     # check that default return string (description)
     assert isinstance(pyls.examples.query_dataset(dataset), str)
     # check that supplying None returns all available keys
@@ -59,6 +61,7 @@ def test_query_dataset(dataset, keys):
 
 
 def test_get_data_dir(tmpdir):
+    """Test the _get_data_dir function for directory handling."""
     # check that default (no arguments) returns valid default directory
     data_dir = pyls.examples.datasets._get_data_dir()
     assert isinstance(data_dir, str)
@@ -81,6 +84,7 @@ def test_get_data_dir(tmpdir):
     ('whitaker_vertes_2016', ['X', 'Y', 'n_perm', 'n_boot', 'n_components'])
 ])
 def test_load_dataset(tmpdir, dataset, keys):
+    """Test loading datasets and validating PLSInputs structure."""
     ds = pyls.examples.load_dataset(dataset, str(tmpdir))
     assert isinstance(ds, pyls.structures.PLSInputs)
     for k in keys:
