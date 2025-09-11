@@ -464,13 +464,13 @@ class PLSRegression(BasePLS):
 
 
 # let's make it a function
-def pls_regression(
+def pls_regression(  # noqa: D103
     X,
     Y,
     *,
     n_components=None,
     n_perm=5000,
-    n_boot=5000,  # noqa: D103
+    n_boot=5000,
     rotate=True,
     ci=95,
     aggfunc="mean",

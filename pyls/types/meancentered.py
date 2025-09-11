@@ -217,12 +217,12 @@ class MeanCenteredPLS(BasePLS):
         return res
 
 
-def meancentered_pls(
+def meancentered_pls(  # noqa: D103
     X,
     *,
     groups=None,
     n_cond=1,
-    mean_centering=0,  # noqa: D103
+    mean_centering=0,
     n_perm=5000,
     n_boot=5000,
     n_split=0,

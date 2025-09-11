@@ -274,14 +274,14 @@ class BehavioralPLS(BasePLS):
 
 
 # let's make it a function
-def behavioral_pls(
+def behavioral_pls(  # noqa: D103
     X,
     Y,
     *,
     groups=None,
     n_cond=1,
     n_perm=5000,
-    n_boot=5000,  # noqa: D103
+    n_boot=5000,
     n_split=0,
     test_size=0.25,
     test_split=100,
