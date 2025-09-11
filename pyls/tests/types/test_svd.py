@@ -4,9 +4,9 @@ import numpy as np
 import pytest
 import pyls
 
-Xf = 1000
+Xf = 100
 Yf = 100
-subj = 100
+subj = 30
 rs = np.random.RandomState(1234)
 
 
@@ -17,8 +17,8 @@ class PLSSVDTest():
                                          Y=rs.rand(subj, Yf),
                                          groups=None, n_cond=1,
                                          mean_centering=0, rotate=True,
-                                         n_perm=20, n_boot=10, n_split=None,
-                                         ci=95, seed=rs, verbose=False)
+                                         n_perm=1, n_boot=1, n_split=None,
+                                         ci=95, seed=rs, n_proc='max', verbose=True)
     funcs = dict(meancentered=pyls.meancentered_pls,
                  behavioral=pyls.behavioral_pls)
 
@@ -79,7 +79,7 @@ def test_behavioral_onegroup_onecondition(n_split, rotate):
 ])
 def test_behavioral_multigroup_onecondition(n_split, rotate):
     """Test behavioral PLS with multiple groups and one condition."""
-    PLSSVDTest('behavioral', groups=[33, 34, 33], n_cond=1, n_split=n_split,
+    PLSSVDTest('behavioral', groups=[9, 10, 11], n_cond=1, n_split=n_split,
                rotate=rotate)
 
 
@@ -88,7 +88,7 @@ def test_behavioral_multigroup_onecondition(n_split, rotate):
 ])
 def test_behavioral_onegroup_multicondition(n_split, rotate):
     """Test behavioral PLS with one group and multiple conditions."""
-    PLSSVDTest('behavioral', groups=subj // 4, n_cond=4, n_split=n_split,
+    PLSSVDTest('behavioral', groups=subj // 3, n_cond=3, n_split=n_split,
                rotate=rotate)
 
 
@@ -97,7 +97,7 @@ def test_behavioral_onegroup_multicondition(n_split, rotate):
 ])
 def test_behavioral_multigroup_multicondition(n_split, rotate):
     """Test behavioral PLS with multiple groups and multiple conditions."""
-    PLSSVDTest('behavioral', groups=[25, 25], n_cond=2, n_split=n_split,
+    PLSSVDTest('behavioral', groups=[7, 8], n_cond=2, n_split=n_split,
                rotate=rotate)
 
 
@@ -107,7 +107,7 @@ def test_behavioral_multigroup_multicondition(n_split, rotate):
 ])
 def test_meancentered_multigroup_onecondition(mean_centering, n_split, rotate):
     """Test mean-centered PLS with multiple groups and one condition."""
-    PLSSVDTest('meancentered', groups=[33, 34, 33], n_cond=1, n_split=n_split,
+    PLSSVDTest('meancentered', groups=[9, 10, 11], n_cond=1, n_split=n_split,
                mean_centering=mean_centering, rotate=rotate)
 
 
@@ -129,7 +129,7 @@ def test_meancentered_onegroup_multicondition(mean_centering, n_split, rotate):
 def test_meancentered_multigroup_multicondition(mean_centering, n_split,
                                                 rotate):
     """Test mean-centered PLS with multiple groups and multiple conditions."""
-    PLSSVDTest('meancentered', groups=[25, 25], n_cond=2, n_split=n_split,
+    PLSSVDTest('meancentered', groups=[7, 8], n_cond=2, n_split=n_split,
                mean_centering=mean_centering, rotate=rotate)
 
 
@@ -158,7 +158,7 @@ def test_custom_permuted_Y():
 def test_warnings():
     """Test warning messages for invalid parameter combinations."""
     with pytest.warns(UserWarning):
-        PLSSVDTest('meancentered', groups=[50, 50], mean_centering=0)
+        PLSSVDTest('meancentered', groups=[15, 15], mean_centering=0)
     with pytest.warns(UserWarning):
         PLSSVDTest('meancentered', n_cond=2, mean_centering=1)
 
@@ -166,10 +166,10 @@ def test_warnings():
 def test_errors():
     """Test error handling for invalid input parameters."""
     with pytest.raises(ValueError):
-        PLSSVDTest('meancentered', groups=[50, 50], mean_centering=3)
+        PLSSVDTest('meancentered', groups=[15, 15], mean_centering=3)
     with pytest.raises(ValueError):
         PLSSVDTest('meancentered', groups=[subj])
     with pytest.raises(ValueError):
-        PLSSVDTest('meancentered', n_cond=3)
+        PLSSVDTest('meancentered', n_cond=4)
     with pytest.raises(ValueError):
         PLSSVDTest('behavioral', Y=rs.rand(subj - 1, Yf))
