@@ -713,7 +713,7 @@ class BasePLS:  # noqa: D101
                         X=X,
                         Y=Y,
                         inds=self.permsamp[:, i],
-                        Y_permuted=None,
+                        # Y_permuted=None,
                         groups=self.dummy,
                         original=self.res["y_weights"],
                         seed=i,
