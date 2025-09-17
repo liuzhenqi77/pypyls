@@ -2,8 +2,9 @@
 
 import json
 import os
-from pkg_resources import resource_filename
-import urllib
+from importlib import resources
+import urllib.request
+import urllib.parse
 
 import numpy as np
 
@@ -16,7 +17,7 @@ try:
 except ImportError:
     pandas_avail = False
 
-with open(resource_filename("pyls", "examples/datasets.json"), "r") as src:
+with (resources.files("pyls.examples") / "datasets.json").open("r") as src:
     _DATASETS = json.load(src)
 
 
@@ -175,6 +176,4 @@ def _get_dataset(name, data_dir=None, verbose=1):
         fname = os.path.join(data_dir, os.path.basename(parse.path))
 
         if not os.path.exists(fname):
-            out = urllib.request.urlopen(url)
-            with open(fname, "wb") as dest:
-                dest.write(out.read())
+            urllib.request.urlretrieve(url, fname)

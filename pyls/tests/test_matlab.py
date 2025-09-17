@@ -31,7 +31,7 @@ data_dir = files("pyls") / "tests" / "data"
         "mpls_onegroup_multicond_split.mat",
     ],
 )
-def test_matlab_equivalence(self, mat_file):
+def test_matlab_equivalence(mat_file):
     """Test MATLAB equivalence for each .mat file."""
     if not os.path.exists(data_dir / mat_file):
         pytest.skip(f"MATLAB file {mat_file} not found")

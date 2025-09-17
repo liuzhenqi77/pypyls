@@ -242,7 +242,7 @@ def assert_matlab_equivalence(
         `fname`
     """
     # load matlab result
-    matlab = pyls.matlab.import_matlab_result(fname)
+    matlab = pyls.import_matlab_result(fname)
 
     # fix n_split default (if not specified in matlab assume 0)
     if "n_split" not in matlab["inputs"]:
