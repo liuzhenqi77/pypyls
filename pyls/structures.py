@@ -106,11 +106,11 @@ _pls_input_docs = dict(
     """),
     resamples=dedent("""\
     permsamples : (S, P) array_like, optional
-        Re-sampling array to be used during permutation test (if n_perm > 0),
+        Resampling array to be used during permutation test (if n_perm > 0),
         where `S` is samples and `P` is permutations.
         If not specified a set of unique permutations will be generated.
         Default: None
-    custom_permuted_Y : (S, T, P), optional
+    custom_permuted_Y : (S, T, P) array_like, optional
         Custom permuted `Y` array to be used during permutation test (if
         n_perm > 0), where `S` is samples, `T` is features, and `P` is permutations.
         If this is provided, `permsamples` is ignored. Default: None

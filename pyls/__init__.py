@@ -1,16 +1,8 @@
 # -*- coding: utf-8 -*-
 
+
 __all__ = [
-    "__version__",
-    "behavioral_pls",
-    "meancentered_pls",
-    "pls_regression",
-    "import_matlab_result",
-    "save_results",
-    "load_results",
-    "examples",
-    "PLSInputs",
-    "PLSResults",
+    "__version__"
 ]
 
 from . import _version

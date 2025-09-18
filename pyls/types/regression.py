@@ -8,7 +8,7 @@ from .. import compute
 
 def resid_yscores(x_scores, y_scores, copy=True):
     """
-    Orthogonalizs `y_scores` with respect to preceding `x_scores`.
+    Orthogonalize `y_scores` with respect to preceding `x_scores`.
 
     Residualizes each column of `y_scores` against all previous columns of
     `x_scores` such that the column represents only the "new" contributions of
